@@ -158,5 +158,17 @@ class SalaryController extends Controller
     return redirect()->route('salary')->with('success', 'Cập nhật thành công');
 }
 
+// Phương thức destroy để xóa bậc lương
+public function destroy($id)
+{
+    // Tìm mức lương theo ID
+    $salaryLevel = salary_level::findOrFail($id);
+
+    // Xóa mức lương
+    $salaryLevel->delete();
+
+    // Trả về trang danh sách với thông báo thành công
+    return redirect()->route('salary')->with('success', 'Xóa bậc lương thành công');
+}
 
 }

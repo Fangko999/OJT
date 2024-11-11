@@ -94,4 +94,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/salary/{id}', [SalaryController::class, 'show'])->name('salary.show');
     Route::get('/salary/{id}/edit', [SalaryController::class, 'edit'])->name('salary.edit');
     Route::put('/salary/{id}', [SalaryController::class, 'update'])->name('salary.update');  // Cập nhật bậc lương
+    Route::delete('/salary/{id}', [SalaryController::class, 'destroy'])->name('salary.destroy');
+
 });

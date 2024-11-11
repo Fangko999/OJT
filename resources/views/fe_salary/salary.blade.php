@@ -13,6 +13,11 @@
     <link href="{{asset('fe-access/css/sb-admin-2.min.css')}}" rel="stylesheet">
 
     <style>
+        /* Cập nhật màu sắc chủ đạo */
+        body {
+            background-color: #f4f6f9; /* Màu nền xám sáng */
+        }
+
         .input-group {
             border-radius: 50px;
             overflow: hidden;
@@ -23,6 +28,7 @@
             border: none;
             padding: 15px;
             font-size: 16px;
+            border-radius: 50px; /* Bo góc input */
         }
 
         .input-group input:focus {
@@ -31,14 +37,14 @@
         }
 
         .input-group .btn {
-            background-color: #4e73df;
+            background-color: #6c757d; /* Màu xám cho nút */
             color: white;
             border: none;
             border-radius: 0;
         }
 
         .input-group .btn:hover {
-            background-color: #2e59d9;
+            background-color: #5a6368; /* Đổi màu khi hover */
         }
 
         .action-btns a, .action-btns button {
@@ -47,6 +53,55 @@
 
         .action-btns .btn {
             border-radius: 5px;
+        }
+
+        .table-bordered {
+            border: 1px solid #dee2e6;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table thead {
+            background-color: #343a40; /* Nền xám tối cho tiêu đề bảng */
+            color: white;
+        }
+
+        .table tbody tr:nth-child(odd) {
+            background-color: #f8f9fc; /* Nền sáng cho các dòng lẻ */
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: #e9ecef; /* Nền sáng cho các dòng chẵn */
+        }
+
+        .btn-primary {
+            background-color: #4e73df; /* Nút chính màu xanh dương */
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9; /* Đổi màu khi hover */
+        }
+
+        .btn-danger {
+            background-color: #dc3545; /* Màu đỏ cho nút xóa */
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333; /* Đổi màu khi hover */
+        }
+
+        .alert-success {
+            background-color: #28a745; /* Màu xanh cho thông báo thành công */
+            color: white;
+        }
+
+        .alert {
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -67,17 +122,17 @@
                     @endif
 
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Danh sách Bậc Lương</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Danh sách bậc lương</h1>
                         <div class="d-flex align-items-center">
-                            <a href="{{ route('salary.create') }}" class="btn btn-primary mr-2">Thêm cấp bậc lương</a>
+                            <a href="{{ route('salary.create') }}" class="btn btn-primary mr-2">Thêm bậc lương</a>
                     
                             <form method="GET" action="{{ route('salary') }}" class="form-inline">
                                 <div class="form-group mb-2">
                                     <label for="search_salary" class="sr-only">Nhập tên cấp bậc:</label>
-                                    <input type="text" class="form-control mr-2" id="search_salary" name="search_salary" value="{{ request()->input('search_salary') }}" placeholder="Nhập tên cấp bậc">
+                                    <input type="text" class="form-control mr-2" id="search_salary" name="search_salary" value="{{ request()->input('search_salary') }}" placeholder="Nhập tên bậc lương...">
                                 </div>
                                 <button type="submit" class="btn btn-primary mb-2">
-                                    <i class="fas fa-search"></i> <!-- Thay đổi icon ở đây -->
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </form>
                         </div>
@@ -88,10 +143,10 @@
                             <thead class="thead-dark">
                                 <tr>
                                     <th>STT</th>
-                                    <th>Bậc</th>
-                                    <th>Lương Tháng</th>
-                                    <th>Lương Ngày</th>
-                                    <th>Chi tiết </th>
+                                    <th>Tên bậc lương</th>
+                                    <th>Lương theo tháng</th>
+                                    <th>Lương theo ngày</th>
+                                    <th>Hành động </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,16 +157,19 @@
                                         <td>{{ number_format($salaryLevel->monthly_salary, 0, ',', '.') }} VND</td>
                                         <td>{{ number_format($salaryLevel->daily_salary, 0, ',', '.') }} VND</td>
                                         <td class="action-btns">
+                                            <!-- Nút Xem -->
                                             <a href="{{ route('salary.show', $salaryLevel->id) }}" class="btn btn-primary">
-                                                <i class="fas fa-info-circle"></i>
+                                                <i class="fas fa-eye"></i> Xem
                                             </a>
-                                            {{-- <form action="{{ route('salary_levels.destroy', $salaryLevel) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+
+                                            <!-- Nút Xóa -->
+                                            <form action="{{ route('salary.destroy', $salaryLevel->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                <button type="submit" class="btn btn-danger">
                                                     <i class="fas fa-trash-alt"></i> Xóa
                                                 </button>
-                                            </form> --}}
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -120,14 +178,6 @@
                     </div>
                 </div>
             </div>
-
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>© {{ date('Y') }} Your Company. All Rights Reserved.</span>
-                    </div>
-                </div>
-            </footer>
         </div>
     </div>
 

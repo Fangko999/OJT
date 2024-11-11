@@ -145,10 +145,9 @@
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>Họ và tên</th>
-                                        <th>Ngày tháng</th>
-                                        <th>Check-In</th>
-                                        <th>Check-Out</th>
-                                        <th>Số giờ làm việc</th>
+                                        <th>Thời gian Check In</th>
+                                        <th>Thời gian Check Out</th>
+                                        <th>Thời gian làm việc</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -158,7 +157,6 @@
                                                 @foreach ($records as $record)
                                                     <tr>
                                                         <td>{{ $report['name'] }}</td>
-                                                        <td>{{ $date }}</td>
                                                         <td>{{ $record['checkIn'] }}</td>
                                                         <td>{{ $record['checkOut'] ?? 'N/A' }}</td>
                                                         <td>{{ $record['hours'] }}</td>
@@ -175,7 +173,7 @@
                         </div>
                     @else
                         <div class="text-center mt-3">
-                            <p>Không có dữ liệu đi làm cho phòng ban đã chọn.</p>
+                            <p>Không có dữ liệu!</p>
                         </div>
                     @endif
 

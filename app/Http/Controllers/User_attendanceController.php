@@ -19,59 +19,61 @@ class User_attendanceController extends Controller
     }
 
     // Phương thức check in
-    public function checkIn()
-    {
-        $user = Auth::user();
-        $latestAttendance = User_attendance::where('user_id', $user->id)
-            ->orderBy('time', 'desc')
-            ->first();
+public function checkIn()
+{
+    $user = Auth::user();
+    $latestAttendance = User_attendance::where('user_id', $user->id)
+        ->orderBy('time', 'desc')
+        ->first();
 
-        if (!$latestAttendance || $latestAttendance->type === 'out') {
-            $attendance = User_attendance::create([
-                'time' => now()->timezone('Asia/Ho_Chi_Minh'),
-                'type' => 'in',
-                'user_id' => $user->id,
-                'status' => true,
-                'justification' => '',
-                'created_by' => $user->id,
-                'updated_by' => $user->id,
-            ]);
+    if (!$latestAttendance || $latestAttendance->type === 'out') {
+        $attendance = User_attendance::create([
+            'time' => now()->timezone('Asia/Ho_Chi_Minh'),
+            'type' => 'in',
+            'user_id' => $user->id,
+            'status' => true,
+            'justification' => '',
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+        ]);
 
-            // Check validity
-            $attendance->checkValidity();
+        // Check validity
+        $attendance->checkValidity();
 
-            return redirect()->back()->with('message', 'Check in thành công.');
-        } else {
-            return redirect()->back()->with('message', 'Bạn đã Check In rồi. Vui lòng Check Out trước khi Check In lại!');
-        }
+        return redirect()->back()->with('status', 'success')->with('message', 'Check In thành công!');
+    } else {
+        return redirect()->back()->with('status', 'error')->with('message', 'Bạn đã Check In, vui lòng Check Out!');
     }
+}
 
-    public function checkOut()
-    {
-        $user = Auth::user();
-        $latestAttendance = User_attendance::where('user_id', $user->id)
-            ->orderBy('time', 'desc')
-            ->first();
+// Phương thức check out
+public function checkOut()
+{
+    $user = Auth::user();
+    $latestAttendance = User_attendance::where('user_id', $user->id)
+        ->orderBy('time', 'desc')
+        ->first();
 
-        if ($latestAttendance && $latestAttendance->type === 'in') {
-            $attendance = User_attendance::create([
-                'time' => now()->timezone('Asia/Ho_Chi_Minh'),
-                'type' => 'out',
-                'user_id' => $user->id,
-                'status' => '1',
-                'justification' => '',
-                'created_by' => $user->id,
-                'updated_by' => $user->id,
-            ]);
+    if ($latestAttendance && $latestAttendance->type === 'in') {
+        $attendance = User_attendance::create([
+            'time' => now()->timezone('Asia/Ho_Chi_Minh'),
+            'type' => 'out',
+            'user_id' => $user->id,
+            'status' => '1',
+            'justification' => '',
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+        ]);
 
-            // Check validity
-            $attendance->checkValidity();
+        // Check validity
+        $attendance->checkValidity();
 
-            return redirect()->back()->with('message', 'Check out thành công.');
-        } else {
-            return redirect()->back()->with('message', 'Bạn chưa Check In, không thể Check Out!');
-        }
+        return redirect()->back()->with('status', 'success')->with('message', 'Check out thành công!');
+    } else {
+        return redirect()->back()->with('status', 'error')->with('message', 'Bạn chưa Check In, không thể Check Out!');
     }
+}
+
 
 
 

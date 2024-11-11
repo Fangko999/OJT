@@ -8,9 +8,9 @@
     <title>Danh sách người dùng</title>
 
     <!-- Font và CSS -->
-    <link href="/fe-access/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="{{asset('fe-access/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
-    <link href="/fe-access/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="{{asset('fe-access/css/sb-admin-2.min.css')}}" rel="stylesheet">
 </head>
 
 <body id="page-top">

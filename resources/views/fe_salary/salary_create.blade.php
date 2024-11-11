@@ -13,6 +13,42 @@
 
     <!-- Thêm CSS tùy chỉnh -->
     <style>
+        /* Căn giữa form */
+.form-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 500px; /* Hạn chế chiều rộng của form */
+    margin: 0 auto; /* Căn giữa form */
+}
+
+/* Căn chỉnh các nút */
+.btn-container {
+    display: flex;
+    justify-content: space-between; /* Căn đều các nút */
+    margin-top: 30px;
+}
+
+.btn-container a {
+    width: 48%; /* Cắt bớt chiều rộng để tạo khoảng cách giữa các nút */
+}
+
+.btn-container button {
+    width: 48%; /* Cắt bớt chiều rộng để tạo khoảng cách giữa các nút */
+}
+
+/* Nút Quay Lại màu đỏ */
+.btn-secondary {
+    background-color: #dc3545; /* Đổi màu đỏ cho nút */
+    border-color: #dc3545;
+}
+
+.btn-secondary:hover {
+    background-color: #c82333; /* Màu đỏ đậm khi hover */
+    border-color: #bd2130;
+}
+
         /* Toàn bộ giao diện */
         body {
             background-color: #f4f4f4; /* Màu nền sáng cho toàn bộ */
@@ -58,14 +94,14 @@
             border-color: #004085;
         }
 
-        .btn-secondary {
-            background-color: #6c757d; /* Nút màu xám */
-            border-color: #6c757d;
+        .btn-danger {
+            background-color: #dc3545; /* Nút đỏ */
+            border-color: #dc3545;
         }
 
-        .btn-secondary:hover {
-            background-color: #5a6268; /* Nút màu khi hover */
-            border-color: #545b62;
+        .btn-danger:hover {
+            background-color: #c82333; /* Nút đỏ khi hover */
+            border-color: #bd2130;
         }
 
         /* Footer */
@@ -117,6 +153,14 @@
             justify-content: space-between;
             margin-top: 30px;
         }
+
+        .form-control {
+            width: 300px; /* Chiều rộng các ô input */
+        }
+
+        .btn-container .btn {
+            width: 120px; /* Độ dài của các nút */
+        }
     </style>
 </head>
 <body id="page-top">
@@ -147,7 +191,6 @@
                         <h1 class="h3 mb-0 text-gray-800">Thêm Bậc Lương</h1>
                     </div>
 
-                    
                     <form action="{{ route('salary.store') }}" method="POST" class="form-container">
                         @csrf
                         <div class="form-group">
@@ -170,7 +213,7 @@
 
                         <!-- Nút Quay Lại và Thêm ở cùng một hàng -->
                         <div class="btn-container">
-                            <a href="{{ route('salary') }}" class="btn btn-secondary">
+                            <a href="{{ route('salary') }}" class="btn btn-danger">
                                 <i class="fas fa-arrow-left"></i> Quay Lại
                             </a>
                             <button type="submit" class="btn btn-primary">Thêm</button>
@@ -178,14 +221,6 @@
                     </form>
                 </div>
             </div>
-
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>© {{ date('Y') }} Your Company. All Rights Reserved.</span>
-                    </div>
-                </div>
-            </footer>
         </div>
     </div>
 

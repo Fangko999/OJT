@@ -14,152 +14,54 @@
     <!-- Thêm CSS tùy chỉnh -->
     <style>
         /* Căn giữa form */
-.form-container {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 500px; /* Hạn chế chiều rộng của form */
-    margin: 0 auto; /* Căn giữa form */
-}
-
-/* Căn chỉnh các nút */
-.btn-container {
-    display: flex;
-    justify-content: space-between; /* Căn đều các nút */
-    margin-top: 30px;
-}
-
-.btn-container a {
-    width: 48%; /* Cắt bớt chiều rộng để tạo khoảng cách giữa các nút */
-}
-
-.btn-container button {
-    width: 48%; /* Cắt bớt chiều rộng để tạo khoảng cách giữa các nút */
-}
-
-/* Nút Quay Lại màu đỏ */
-.btn-secondary {
-    background-color: #dc3545; /* Đổi màu đỏ cho nút */
-    border-color: #dc3545;
-}
-
-.btn-secondary:hover {
-    background-color: #c82333; /* Màu đỏ đậm khi hover */
-    border-color: #bd2130;
-}
-
-        /* Toàn bộ giao diện */
-        body {
-            background-color: #f4f4f4; /* Màu nền sáng cho toàn bộ */
-            color: #333; /* Màu chữ tối */
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background-color: #333; /* Sidebar màu xám đậm */
-        }
-
-        .sidebar .nav-link {
-            color: #ccc; /* Liên kết màu xám nhạt */
-        }
-
-        .sidebar .nav-link:hover {
-            background-color: #444; /* Màu nền khi hover */
-            color: #fff;
-        }
-
-        .sidebar .nav-link.active {
-            background-color: #007bff; /* Màu xanh cho liên kết active */
-            color: #fff;
-        }
-
-        /* Header */
-        .bg-white {
-            background-color: #fff; /* Màu nền trắng cho header */
-        }
-
-        .h3, h1, .form-label {
-            color: #333333; /* Màu chữ tối cho tiêu đề */
-        }
-
-        /* Nút */
-        .btn-primary {
-            background-color: #007bff; /* Nút màu xanh */
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3; /* Màu xanh khi hover */
-            border-color: #004085;
-        }
-
-        .btn-danger {
-            background-color: #dc3545; /* Nút đỏ */
-            border-color: #dc3545;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333; /* Nút đỏ khi hover */
-            border-color: #bd2130;
-        }
-
-        /* Footer */
-        .sticky-footer {
-            background-color: #333; /* Footer xám đậm */
-            color: #fff;
-        }
-
-        footer {
-            background-color: #333; /* Màu xám đậm cho footer */
-            color: #fff;
-            padding: 20px;
-        }
-
-        .copyright {
-            text-align: center;
-        }
-
-        /* Form */
-        .form-control {
-            background-color: #fff; /* Nền trắng cho input */
-            border: 1px solid #ccc; /* Đường viền xám */
-        }
-
-        .form-control:focus {
-            border-color: #007bff; /* Đổi màu viền khi focus */
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
-
-        /* Cấu trúc form */
         .form-container {
             background-color: #fff;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px; /* Hạn chế chiều rộng của form */
+            margin: 0 auto; /* Căn giữa form */
         }
 
-        .form-group {
+        /* Căn giữa tiêu đề và di chuyển nút "Quay Lại" */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
 
-        .form-group label {
+        .header-title {
+            text-align: center;
+            flex: 1;
             font-weight: bold;
-        }
-        
-        /* Giao diện tinh giản */
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
+            font-size: 1.5rem;
+            color: #333333;
         }
 
-        .form-control {
-            width: 300px; /* Chiều rộng các ô input */
+        .back-button {
+            margin-right: auto;
         }
 
-        .btn-container .btn {
-            width: 120px; /* Độ dài của các nút */
+        /* Các kiểu nút */
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
         }
     </style>
 </head>
@@ -187,8 +89,12 @@
                         </div>
                     @endif
 
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Thêm Bậc Lương</h1>
+                    <!-- Header với nút Quay Lại và tiêu đề căn giữa -->
+                    <div class="header-container">
+                        <a href="{{ route('salary') }}" class="btn btn-danger back-button">
+                            <i class="fas fa-arrow-left"></i> Quay Lại
+                        </a>
+                        <h1 class="header-title">Thêm Bậc Lương</h1>
                     </div>
 
                     <form action="{{ route('salary.store') }}" method="POST" class="form-container">
@@ -211,11 +117,8 @@
                                    class="form-control money-input" placeholder="Nhập lương ngày" required>
                         </div>
 
-                        <!-- Nút Quay Lại và Thêm ở cùng một hàng -->
-                        <div class="btn-container">
-                            <a href="{{ route('salary') }}" class="btn btn-danger">
-                                <i class="fas fa-arrow-left"></i> Quay Lại
-                            </a>
+                        <!-- Nút Thêm ở phía dưới cùng của form -->
+                        <div class="text-center">
                             <button type="submit" class="btn btn-primary">Thêm</button>
                         </div>
                     </form>
@@ -223,11 +126,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
 
     <!-- Bootstrap core JavaScript-->
     <script src="fe-access/vendor/jquery/jquery.min.js"></script>

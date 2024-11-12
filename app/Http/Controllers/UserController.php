@@ -16,11 +16,10 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search'); // Lấy từ khóa tìm kiếm từ request
-        $query = User::with('department');  // Khởi tạo query
+        $search = $request->input('search');
+        $query = User::with('department', 'salaryLevel'); // Thêm quan hệ với salaryLevel
 
         if ($search) {
-            // Thêm điều kiện tìm kiếm theo tên, email hoặc chức vụ
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
@@ -28,8 +27,8 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->paginate(7); // Phân trang kết quả
-        $departments = Department::all(); // Lấy tất cả phòng ban
+        $users = $query->paginate(7);
+        $departments = Department::all();
 
         return view('fe_user.users', compact('users', 'departments', 'search'));
     }
@@ -85,11 +84,12 @@ class UserController extends Controller
             'phone_number' => [
                 'required',
                 'string',
-                'regex:/^(\+84|84|0)(\d{9})$/', // Cho phép các định dạng như +84, 84, 0 và 9 số phía sau
+                'regex:/^(\+84|84|0)(\d{9})$/',
             ],
             'position' => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
-            'role' => 'required|integer', // Đảm bảo trường role phải được nhập
+            'role' => 'required|integer',
+            'salary_level_id' => 'nullable|exists:salary_levels,id', // Thêm salary_level_id vào validate
         ], [
             'email.regex' => 'Email không hợp lệ. Vui lòng nhập đúng định dạng.',
             'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng +84, 84 hoặc 0 và có 10 đên 11 số!',
@@ -99,18 +99,18 @@ class UserController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Chuẩn hóa số điện thoại
         $phone_number = $this->normalizePhoneNumber($request->phone_number);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'phone_number' => $phone_number, // Lưu số điện thoại đã chuẩn hóa
+            'phone_number' => $phone_number,
             'department_id' => $request->department_id,
             'position' => $request->position,
             'status' => 1,
-            'role' => $request->role, // Gán role mặc định nếu không có
+            'role' => $request->role,
+            'salary_level_id' => $request->salary_level_id, // Lưu salary_level_id
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
@@ -157,26 +157,27 @@ class UserController extends Controller
             'phone_number' => [
                 'required',
                 'string',
-                'regex:/^(\+84|84|0)(\d{9})$/', // Kiểm tra định dạng số điện thoại
+                'regex:/^(\+84|84|0)(\d{9})$/',
             ],
             'position' => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
+            'salary_level_id' => 'nullable|exists:salary_levels,id', // Thêm salary_level_id vào validate
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Chuẩn hóa số điện thoại
         $phone_number = $this->normalizePhoneNumber($request->phone_number);
 
         $user->update($request->only([
             'name',
             'email',
             'position',
-            'department_id'
+            'department_id',
+            'salary_level_id', // Cập nhật salary_level_id
         ]) + [
-            'phone_number' => $phone_number, // Lưu số điện thoại đã chuẩn hóa
+            'phone_number' => $phone_number,
             'updated_by' => Auth::id()
         ]);
 

@@ -188,12 +188,12 @@
                                     class="font-weight-bold">{{ number_format($salaryLevel->daily_salary, 0, '.', ',') }}
                                     VND</span>
                             </p>
-                            <p class="card-text">
+                            <!-- <p class="card-text">
                                 <strong>Trạng thái:</strong>
                                 <span class="badge badge-{{ $salaryLevel->status == 1 ? 'success' : 'danger' }}">
                                     {{ $salaryLevel->status == 1 ? 'Hoạt động' : 'Không hoạt động' }}
                                 </span>
-                            </p>
+                            </p> -->
                             <p class="card-text">
                                 <strong>Thời gian tạo:</strong>
                                 <span class="font-weight-bold">{{ $salaryLevel->created_at->format('d/m/Y') }}</span>

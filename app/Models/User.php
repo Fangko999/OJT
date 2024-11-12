@@ -2,23 +2,29 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Department;
+use App\Models\SalaryLevel;
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * The name of the table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'users';
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $table = 'users';
-
     protected $fillable = [
         'name',
         'email',
@@ -32,6 +38,7 @@ class User extends Authenticatable
         'created_by',
         'updated_at',
         'updated_by',
+        'salary_level_id', // Thêm cột này để quản lý cấp bậc lương
     ];
 
     /**
@@ -39,7 +46,6 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-  
     protected $hidden = [
         'password',
         'remember_token',
@@ -56,10 +62,40 @@ class User extends Authenticatable
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-    public function department() {
+
+    /**
+     * Relationship with Department.
+     */
+    public function department()
+    {
         return $this->belongsTo(Department::class, 'department_id', 'id');
     }
-    public function isActive(){
+
+    /**
+     * Relationship with SalaryLevel.
+     */
+    public function salaryLevel()
+    {
+        return $this->belongsTo(salary_level::class, 'salary_level_id', 'id');
+    }
+
+    /**
+     * Accessor to get the user's salary from salary_level.
+     *
+     * @return float|null
+     */
+    public function getSalaryAttribute()
+    {
+        return $this->salaryLevel->monthly_salary ?? null;
+    }
+
+    /**
+     * Check if the user is active.
+     *
+     * @return bool
+     */
+    public function isActive()
+    {
         return $this->status === 1;
     }
 }

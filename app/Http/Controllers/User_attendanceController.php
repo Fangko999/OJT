@@ -25,7 +25,7 @@ class User_attendanceController extends Controller
         }
     
         $attendances = $query->orderBy('time', 'desc') // Sắp xếp theo thời gian mới nhất
-            ->paginate(7); // Phân trang, mỗi trang có 5 bản ghi
+            ->paginate(7); // Phân trang, mỗi trang có 7 bản ghi
     
         return view('fe_attendances.users_attendance', compact('attendances'));
     }
@@ -170,7 +170,7 @@ public function rejectAttendance($id)
 
 public function manageInvalidAttendances() {
     // Lấy tất cả các bản ghi không hợp lệ và sắp xếp theo cái mới nhất lên đầu
-    $invalidAttendances = User_attendance::where('status', 0)
+    $invalidAttendances = User_attendance::where('status', 2)
                         ->orWhere('status', 2) // Include pending justifications
                         ->orderBy('time', 'desc') // Sắp xếp theo thời gian mới nhất
                         ->paginate(7); // Bạn có thể thay đổi số lượng trang

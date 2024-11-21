@@ -121,14 +121,14 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($invalidAttendances as $attendance)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $attendance->user->name }}</td>
-                                            <td>{{ $attendance->time->format('H:i d/m/Y') }}</td>
-                                            <td>{{ ucfirst($attendance->type) }}</td>
-                                            <td>{{ $attendance->justification ?? 'Chưa có giải trình' }}</td>
-                                            <td>
-                                                @if ($attendance->status == 2)
+                                        @if ($attendance->status == 2)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $attendance->user->name }}</td>
+                                                <td>{{ $attendance->time->format('H:i d/m/Y') }}</td>
+                                                <td>{{ ucfirst($attendance->type) }}</td>
+                                                <td>{{ $attendance->justification }}</td>
+                                                <td>
                                                     <form action="{{ route('admin.approveAttendance', $attendance->id) }}" method="POST" style="display:inline;">
                                                         @csrf
                                                         <button type="submit" class="btn btn-success">Chấp nhận lý do</button>
@@ -137,11 +137,9 @@
                                                         @csrf
                                                         <button type="submit" class="btn btn-danger">Từ chối lý do</button>
                                                     </form>
-                                                @else
-                                                    <span class="badge badge-secondary">Không có lý do</span>
-                                                @endif
-                                            </td>
-                                        </tr>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>

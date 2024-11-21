@@ -92,6 +92,7 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 @include('fe_admin.topbar') <!-- Topbar -->
+                
 
                 <div class="container-fluid">
                     @if(session('message'))
@@ -159,7 +160,7 @@
                                                         <td>{{ $report['name'] }}</td>
                                                         <td>{{ $record['checkIn'] }}</td>
                                                         <td>{{ $record['checkOut'] ?? 'N/A' }}</td>
-                                                        <td>{{ $record['hours'] }}</td>
+                                                        <td>{{ gmdate('H:i:s', $record['hours'] * 3600) }}</td>
                                                     </tr>
                                                 @endforeach
                                             @endif

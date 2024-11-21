@@ -3,79 +3,180 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\User_attendance;
 use Carbon\Carbon;
+use Hamcrest\Core\Set;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class User_attendanceController extends Controller
 {
     // Phương thức hiển thị lịch sử chấm công của người dùng
-    public function index()
+    public function index(Request $request)
     {
-        $attendances = User_attendance::where('user_id', Auth::id())->get();
+        $query = User_attendance::where('user_id', Auth::id());
+    
+        // Kiểm tra nếu có tham số tìm kiếm theo ngày
+        if ($request->has('search_date') && $request->input('search_date') !== '') {
+            $searchDate = $request->input('search_date');
+            $query->whereDate('time', $searchDate); // Tìm kiếm theo ngày
+        }
+    
+        $attendances = $query->orderBy('time', 'desc') // Sắp xếp theo thời gian mới nhất
+            ->paginate(7); // Phân trang, mỗi trang có 5 bản ghi
+    
         return view('fe_attendances.users_attendance', compact('attendances'));
     }
+    
 
     // Phương thức check in
-public function checkIn()
-{
-    $user = Auth::user();
-    $latestAttendance = User_attendance::where('user_id', $user->id)
-        ->orderBy('time', 'desc')
-        ->first();
+   
 
-    if (!$latestAttendance || $latestAttendance->type === 'out') {
-        $attendance = User_attendance::create([
-            'time' => now()->timezone('Asia/Ho_Chi_Minh'),
-            'type' => 'in',
-            'user_id' => $user->id,
-            'status' => true,
-            'justification' => '',
-            'created_by' => $user->id,
-            'updated_by' => $user->id,
-        ]);
-
-        // Check validity
-        $attendance->checkValidity();
-
-        return redirect()->back()->with('status', 'success')->with('message', 'Check In thành công!');
-    } else {
-        return redirect()->back()->with('status', 'error')->with('message', 'Bạn đã Check In, vui lòng Check Out!');
+    public function checkIn(Request $request)
+    {
+        $user = Auth::user();
+    
+        // Lấy bản ghi check in mới nhất
+        $latestAttendance = User_attendance::where('user_id', $user->id)
+            ->orderBy('time', 'desc')
+            ->first();
+    
+        // Kiểm tra trạng thái của bản ghi check in gần nhất
+        if (!$latestAttendance || ($latestAttendance->type === 'out' || $latestAttendance->status)) {
+            // Nếu không có bản ghi check in, hoặc bản ghi gần nhất là check out hoặc đã được chấp nhận
+    
+            // Kiểm tra xem hôm qua có quên check out không
+            $yesterday = Carbon::yesterday()->toDateString();
+            $yesterdayAttendance = User_attendance::where('user_id', $user->id)
+                ->whereDate('time', $yesterday)
+                ->where('type', 'in')
+                ->whereNull('justification')
+                ->first();
+    
+            // Nếu có bản ghi check in nhưng chưa có lý do giải trình, yêu cầu người dùng giải trình lý do
+            if ($yesterdayAttendance) {
+                return redirect()->back()->with('message', 'Bạn chưa checkout hôm qua, vui lòng giải trình lý do.')->withInput();
+            }
+    
+            // Nếu không có vấn đề gì, thực hiện check-in
+            $TimeAttendent = Setting::first();
+            $checkInTimeAllowed = $TimeAttendent -> check_in_time;
+            $checkInTime = now()->timezone('Asia/Ho_Chi_Minh');
+            $validStatus = $checkInTime->format('H:i') < $checkInTimeAllowed;
+    
+            // Lưu bản ghi check-in
+            $attendance = User_attendance::create([
+                'time' => $checkInTime,
+                'type' => 'in',
+                'user_id' => $user->id,
+                'status' => $validStatus,
+                'justification' => $request->input('justification', ''),
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
+    
+            // Nếu không hợp lệ và chưa có lý do giải trình, yêu cầu nhập lý do
+            if (!$validStatus && !$request->input('justification')) {
+                return redirect()->back()->with('warning', 'Check in không hợp lệ, vui lòng giải trình lý do.')->withInput();
+            }
+    
+            return redirect()->back()->with('message', 'Check in thành công.');
+        } else {
+            return redirect()->back()->with('message', 'Bạn đã Check In, vui lòng Check Out!');
+        }
     }
+    
+
+
+    public function checkOut(Request $request)
+    {
+        $user = Auth::user();
+        $latestAttendance = User_attendance::where('user_id', $user->id)
+            ->orderBy('time', 'desc')
+            ->first();
+    
+        if ($latestAttendance && $latestAttendance->type === 'in') {
+            // Lấy thời gian check out
+            $TimeAttendent = Setting::first();
+            $checkOutTimeAllowed = $TimeAttendent -> check_out_time;
+            $checkOutTime = now()->timezone('Asia/Ho_Chi_Minh');
+            $validStatus = $checkOutTime->format('H:i') >= $checkOutTimeAllowed;
+    
+            // Lưu bản ghi check-out bất kể hợp lệ hay không
+            $attendance = User_attendance::create([
+                'time' => $checkOutTime,
+                'type' => 'out',
+                'user_id' => $user->id,
+                'status' => $validStatus,
+                'justification' => $request->input('justification', ''), // Lưu lý do giải trình nếu có
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
+    
+            // Nếu không hợp lệ và chưa có lý do giải trình, yêu cầu nhập lý do
+            if (!$validStatus && !$request->input('justification')) {
+                return redirect()->back()->with('warning', 'Check Out không hợp lệ, vui lòng giải trình lý do.')->withInput();
+            }
+    
+            // Thông báo cho người dùng về thời gian check-out
+            return redirect()->back()->with('message', 'Check out thành công.');
+        } else {
+            return redirect()->back()->with('message', 'Bạn chưa Check In, không thể Check Out!');
+        }
+    }
+    
+    public function addJustification(Request $request, $attendanceId)
+{
+    $attendance = User_attendance::findOrFail($attendanceId);
+    
+    // Lưu lý do giải trình
+    $attendance->justification = $request->input('justification');
+    
+    // Cập nhật trạng thái lý do giải trình
+    $attendance->status = 2; // Đang chờ giải trình
+    $attendance->save();
+    
+    // Trả về thông báo thành công và chuyển hướng
+    return redirect()->route('attendance')->with('message', 'Gửi giải trình thành công.');
 }
 
-// Phương thức check out
-public function checkOut()
+public function approveAttendance($id)
 {
-    $user = Auth::user();
-    $latestAttendance = User_attendance::where('user_id', $user->id)
-        ->orderBy('time', 'desc')
-        ->first();
-
-    if ($latestAttendance && $latestAttendance->type === 'in') {
-        $attendance = User_attendance::create([
-            'time' => now()->timezone('Asia/Ho_Chi_Minh'),
-            'type' => 'out',
-            'user_id' => $user->id,
-            'status' => '1',
-            'justification' => '',
-            'created_by' => $user->id,
-            'updated_by' => $user->id,
-        ]);
-
-        // Check validity
-        $attendance->checkValidity();
-
-        return redirect()->back()->with('status', 'success')->with('message', 'Check out thành công!');
-    } else {
-        return redirect()->back()->with('status', 'error')->with('message', 'Bạn chưa Check In, không thể Check Out!');
+    $attendance = User_attendance::findOrFail($id);
+    
+    if ($attendance->status == 2) {
+        $attendance->status = 1; // Chấp nhận lý do, chuyển thành hợp lệ
+        $attendance->save();
+        return redirect()->back()->with('message', 'Trạng thái đã được thay đổi thành "Hợp lệ".');
     }
+    
+    return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.');
 }
 
+public function rejectAttendance($id)
+{
+    $attendance = User_attendance::findOrFail($id);
+    
+    if ($attendance->status == 2) {
+        $attendance->status = 3; // Đã từ chối
+        $attendance->save();
+        return redirect()->back()->with('message', 'Lý do giải trình đã bị từ chối.');
+    }
+    
+    return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.');
+}
 
-
+public function manageInvalidAttendances() {
+    // Lấy tất cả các bản ghi không hợp lệ và sắp xếp theo cái mới nhất lên đầu
+    $invalidAttendances = User_attendance::where('status', 0)
+                        ->orWhere('status', 2) // Include pending justifications
+                        ->orderBy('time', 'desc') // Sắp xếp theo thời gian mới nhất
+                        ->paginate(7); // Bạn có thể thay đổi số lượng trang
+    
+    return view('fe_attendances.attendance_management', compact('invalidAttendances'));
+}
 
     // Phương thức báo cáo hàng tháng
     public function monthlyReport(Request $request)
@@ -130,7 +231,6 @@ public function checkOut()
 }
 
 
-    
 
     // Phương thức báo cáo cho phòng ban
     public function departmentReport(Request $request)
@@ -160,7 +260,7 @@ public function checkOut()
         // Áp dụng lọc ngày và phân trang
         $attendanceData = $this->filterByDate($query, $startDate, $endDate, $singleDate)
             ->orderBy('time', 'asc')
-            ->paginate(10); // Chia thành 10 bản ghi mỗi trang
+            ->paginate(7); // Chia thành 10 bản ghi mỗi trang
         // Rest of the monthly report logic
         $monthlyReport = [];
         foreach ($attendanceData as $attendance) {
@@ -277,4 +377,7 @@ public function checkOut()
         }
         return $query;
     }
+
+  
+    
 }

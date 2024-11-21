@@ -5,14 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class salary_level extends Model
+class Salary_level extends Model
 {
     use HasFactory;
-
-    // Tên bảng trong cơ sở dữ liệu
     protected $table = 'salary_level';
-
-    // Các cột có thể mass-assigned
     protected $fillable = [
         'name',
         'monthly_salary',
@@ -23,10 +19,8 @@ class salary_level extends Model
         'updated_at',
         'updated_by',
     ];
-
-    // Cấu hình các cột ngày tháng
     protected $casts = [
-        'created_at' => 'datetime', // Sử dụng Carbon cho các cột datetime
+        'created_at' => 'datetime',  // Sử dụng Carbon cho các cột datetime
         'updated_at' => 'datetime',
     ];
 
@@ -42,6 +36,4 @@ class salary_level extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    // Tắt tính năng timestamps nếu không sử dụng
-    public $timestamps = false; // Bỏ đi nếu bạn đang sử dụng các cột created_at và updated_at tự động quản lý
 }

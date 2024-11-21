@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;  // Đảm bảo rằng bạn đã import Carbon
+
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -9,17 +11,21 @@ use Illuminate\Support\Facades\Validator;
 use App\Exports\UsersExport;
 use App\Exports\UserTemplateExport;
 use App\Imports\UsersImport;
+use App\Models\Salary;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
+
 class UserController extends Controller
 {
+
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $query = User::with('department', 'salaryLevel'); // Thêm quan hệ với salaryLevel
+        $search = $request->input('search'); // Lấy từ khóa tìm kiếm từ request
+        $query = User::with('department');  // Khởi tạo query
 
         if ($search) {
+            // Thêm điều kiện tìm kiếm theo tên, email hoặc chức vụ
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
@@ -27,34 +33,34 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->paginate(7);
-        $departments = Department::all();
+        $users = $query->paginate(5); // Phân trang kết quả
+        $departments = Department::all(); // Lấy tất cả phòng ban
 
-        return view('fe_user.users', compact('users', 'departments', 'search'));
+        return view('fe_user/users', compact('users', 'departments', 'search'));
     }
 
     public function destroy(Request $request)
     {
         $userIds = $request->input('user_ids'); // Lấy danh sách ID người dùng từ request
-
+    
         if ($userIds) {
-            // Lọc ra các user không phải admin (role != 1) để xóa
-            $usersToDelete = User::whereIn('id', $userIds)
+            // Lọc người dùng không phải admin (role != 1) để vô hiệu hóa
+            $usersToDisable = User::whereIn('id', $userIds)
                 ->where('role', '!=', 1)
-                ->pluck('id'); // Lấy danh sách ID hợp lệ
-
-            if ($usersToDelete->isEmpty()) {
-                return redirect()->route('users')->with('error', 'Không thể xóa admin hoặc không có nhân viên hợp lệ để xóa.');
+                ->get(); // Lấy danh sách người dùng hợp lệ
+    
+            if ($usersToDisable->isEmpty()) {
+                return redirect()->route('users')->with('error', 'Không thể xóa admin hoặc không có người dùng hợp lệ để vô hiệu hóa.');
             }
-
-            User::destroy($usersToDelete); // Xóa người dùng hợp lệ
-
-            return redirect()->route('users')->with('success', 'Xóa nhân viên thành công !');
+    
+            // Cập nhật trạng thái của tất cả người dùng hợp lệ thành 0 (vô hiệu hóa)
+            User::whereIn('id', $usersToDisable->pluck('id'))->update(['status' => 0]);
+    
+            return redirect()->route('users')->with('success', 'Người dùng đã được vô hiệu hóa thành công.');
         }
-
-        return redirect()->route('users')->with('error', 'Vui lòng chọn nhân viên để xóa.');
+    
+        return redirect()->route('users')->with('error', 'Vui lòng chọn người dùng để vô hiệu hóa.');
     }
-
     private function getDepartments($parentId = 0)
     {
         return Department::where('parent_id', $parentId)->get();
@@ -69,7 +75,6 @@ class UserController extends Controller
 
         return view('fe_user.create_user', compact('departments', 'subDepartments'));
     }
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -83,41 +88,41 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'phone_number' => [
                 'required',
-                'string',
-                'regex:/^(\+84|84|0)(\d{9})$/',
+                'regex:/^84[0-9]{9,10}$/',
             ],
             'position' => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
-            'role' => 'required|integer',
-            'salary_level_id' => 'nullable|exists:salary_levels,id', // Thêm salary_level_id vào validate
+            'role' => 'required|integer', // Đảm bảo trường role phải được nhập
+
         ], [
             'email.regex' => 'Email không hợp lệ. Vui lòng nhập đúng định dạng.',
-            'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng +84, 84 hoặc 0 và có 10 đên 11 số!',
+            'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 84 và có 9-10 chữ số.',
         ]);
-
+    
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-
-        $phone_number = $this->normalizePhoneNumber($request->phone_number);
-
+    
+        // Kiểm tra xem người dùng đã tồn tại chưa
+        if (User::where('email', $request->email)->exists()) {
+            return back()->with('error', 'Email đã tồn tại.')->withInput();
+        }
+    
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'phone_number' => $phone_number,
+            'phone_number' => $request->phone_number,
             'department_id' => $request->department_id,
             'position' => $request->position,
             'status' => 1,
-            'role' => $request->role,
-            'salary_level_id' => $request->salary_level_id, // Lưu salary_level_id
+            'role' => $request->role , // Gán role mặc định nếu không có
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
-
-        return redirect()->route('users')->with('success', 'Tạo nhân viên thành công.');
+    
+        return redirect()->route('users')->with('success', 'Người dùng đã được tạo thành công.');
     }
-
     public function show($id)
     {
         $user = User::with('department')->findOrFail($id); // Lấy thông tin user cùng phòng ban
@@ -129,23 +134,22 @@ class UserController extends Controller
     public function edit(Request $request, $id)
     {
         $user = User::with('department')->findOrFail($id); // Lấy thông tin user cùng phòng ban
-
+    
         // Lấy tất cả phòng ban cha (parent_id = 0)
         $departments = Department::where('parent_id', 0)->get();
-
+    
         // Khởi tạo biến subDepartments là một mảng rỗng
         $subDepartments = [];
-
+    
         // Nếu người dùng đã chọn phòng ban cha, lấy phòng ban con
         if ($request->has('parent_department_id')) {
             $subDepartments = Department::where('parent_id', $request->input('parent_department_id'))->get();
         } elseif ($user->department && $user->department->parent_id) {
             $subDepartments = Department::where('parent_id', $user->department->parent_id)->get();
         }
-
-        return view('fe_user.profile', compact('user', 'departments', 'subDepartments'));
+    
+        return view('fe_user/profile', compact('user', 'departments', 'subDepartments'));
     }
-
     // Cập nhật thông tin người dùng
     public function update(Request $request, $id)
     {
@@ -154,37 +158,86 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
-            'phone_number' => [
-                'required',
-                'string',
-                'regex:/^(\+84|84|0)(\d{9})$/',
-            ],
+            'phone_number' => 'required|string|max:15',
             'position' => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
-            'salary_level_id' => 'nullable|exists:salary_levels,id', // Thêm salary_level_id vào validate
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        $phone_number = $this->normalizePhoneNumber($request->phone_number);
-
         $user->update($request->only([
             'name',
             'email',
+            'phone_number',
             'position',
-            'department_id',
-            'salary_level_id', // Cập nhật salary_level_id
-        ]) + [
-            'phone_number' => $phone_number,
-            'updated_by' => Auth::id()
-        ]);
+            'department_id'
+        ]) + ['updated_by' => Auth::id()]);
 
-        return redirect()->route('users')->with('success', 'Cập nhật thông tin nhân viên thành công!');
+        return redirect()->route('attendance')->with('success', 'User updated successfully.');
     }
 
-    public function importPost(Request $request)
+    // public function export() {
+    //     $users = User::all(); // Lấy tất cả người dùng
+    //     dd($users); // Hiển thị dữ liệu
+    //     return Excel::download(new UsersExport, 'users.xlsx');
+    // }
+    
+    public function showDetail($id)
+    {
+        $user = User::with(['department', 'salary'])->findOrFail($id);
+        $departments = Department::where('parent_id', 0)->get();
+        $salaries = Salary::all(); // Lấy tất cả hệ số lương
+    
+        $subDepartments = $user->department && $user->department->parent_id 
+            ? Department::where('parent_id', $user->department->parent_id)->get() 
+            : [];
+    
+        return view('fe_user/user_detail', compact('user', 'departments', 'subDepartments', 'salaries'));
+    }
+
+    public function editUser(Request $request, $id)
+    {
+        $user = User::with(['department', 'salaries'])->findOrFail($id);
+        $departments = Department::where('parent_id', 0)->get();
+    
+        $subDepartments = [];
+        $salaryCoefficient = $user->salary ? $user->salary->salaryCoefficient : 1.00;
+    
+        if ($request->has('salary_id')) {
+            $salary =Salary::find($request->input('salary_id'));
+            $salaryCoefficient = $salary ? $salary->salaryCoefficient : $salaryCoefficient;
+        }
+    
+        return view('fe_user/user_detail', compact('user', 'departments', 'subDepartments', 'salaryCoefficient'));
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+    
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'phone_number' => 'required|string|max:15',
+            'position' => 'required|string',
+            'department_id' => 'required|exists:departments,id',
+            'status' => 'required|string',
+            'salary_id' => 'required|exists:salaries,id', // Xác thực salary_id
+        ]);
+    
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+    
+        $user->update($request->only([
+            'email', 'phone_number', 'position', 'department_id', 'status', 'salary_id'
+        ]) + ['updated_by' => Auth::id()]);
+    
+        return redirect()->route('users.detail', ['id' => $user->id])
+                         ->with('success', 'Thông tin người dùng đã được cập nhật thành công.');
+    }
+public function importPost(Request $request)
     {
         $request->validate([
             'import_file' => [
@@ -195,38 +248,64 @@ class UserController extends Controller
         ]);
         try {
             Excel::import(new UsersImport, $request->file('import_file'));
-            return redirect()->route('users')->with('success', 'Thêm nhân viên thành công.');
+            return redirect()->route('users')->with('success', 'Import thành công.');
         } catch (\Exception $e) {
-            return redirect()->route('users')->with('error', 'Thêm thất bại, vui lòng kiểm tra lại.');
+            return redirect()->route('users')->with('error', 'Import thất bại. Vui lòng kiểm tra file mẫu.');
         }
     }
-
     public function export()
     {
-        return Excel::download(new UsersExport, 'Users.xlsx');
+        return Excel::download(new UsersExport, 'users.xlsx');
+    }
+   public function exportTemplate(){
+    return Excel::download(new UserTemplateExport, 'users_template.xlsx');
+   }
+
+   public function showReminderForm()
+{
+    $user = Auth::user(); // Lấy thông tin người dùng hiện tại
+
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục.');
     }
 
-    public function exportTemplate()
-    {
-        return Excel::download(new UserTemplateExport, 'Template-User.xlsx');
+    return view('fe_attendances.users_attendance');  // Không cần truyền biến $user nữa
+}
+
+
+
+public function saveReminderSettings(Request $request)
+{
+    // Kiểm tra nếu người dùng đã đăng nhập
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để tiếp tục.');
     }
 
-    // Phương thức chuẩn hóa số điện thoại
-    private function normalizePhoneNumber($phone)
-    {
-        // Loại bỏ khoảng trắng và ký tự không phải số
-        $phone = preg_replace('/\D/', '', $phone);
+    // Lấy người dùng hiện tại từ Auth
+    $user = Auth::user();
 
-        // Nếu số điện thoại bắt đầu bằng 84, thì thay đổi thành 0
-        if (substr($phone, 0, 2) === '84') {
-            $phone = '0' . substr($phone, 2);
-        } elseif (substr($phone, 0, 1) === '0') {
-            // Nếu bắt đầu bằng 0 thì giữ nguyên
-        } else {
-            // Nếu không bắt đầu bằng +84 hoặc 0, thêm 0 ở đầu
-            $phone = '0' . $phone;
-        }
+    // Validate rằng reminder_time phải có định dạng H:i
+    $request->validate([
+        'reminder_time' => 'required|date_format:H:i',
+    ]);
 
-        return $phone;
+    // Lấy thời gian nhắc nhở từ form và thêm phần giây
+    $reminderTime = $request->input('reminder_time') . ':00'; // Thêm phần giây
+
+    // Chuyển đổi thời gian thành định dạng H:i:s
+    $user->reminder_time = Carbon::createFromFormat('H:i:s', $reminderTime)->format('H:i:s');
+
+    // Lưu lại thông tin người dùng
+    if ($user->save()) {
+        return redirect()->back()->with('success', 'Thời gian nhắc nhở đã được cập nhật!');
+    } else {
+        return back()->withErrors(['error' => 'Lỗi khi cập nhật thời gian nhắc nhở']);
     }
+}
+
+
+   
+
+   
 }

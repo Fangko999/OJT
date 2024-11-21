@@ -2,173 +2,162 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\salary_level;
+use App\Models\Department;
+use App\Models\Salary;
+use App\Models\User;
 use Illuminate\Http\Request;
 
-class SalaryController extends Controller
-{
-    public function index(Request $request)
-{
-    // Lấy giá trị tìm kiếm từ request
-    $searchSalary = $request->input('search_salary');
+// class SalaryController extends Controller
+// {
+//     public function index(Request $request)
+//     {
+//         // Lấy giá trị tìm kiếm từ request
+//         $searchSalary = $request->input('search_salary');
+//         $departments = Department::where('parent_id', 0)->get();
 
-    // Tạo truy vấn cơ bản
-    $query = salary_level::query();
+//         // Tạo truy vấn cơ bản
+//         $query = Salary::query();
 
-    // Nếu có giá trị tìm kiếm, tìm trong tên cấp bậc
-    if ($searchSalary) {
-        $query->where('name', 'LIKE', '%' . $searchSalary . '%');
-    }
+//         // Nếu có giá trị tìm kiếm, tìm trong trường 'created_by' hoặc bất kỳ trường nào bạn muốn
+//         if ($searchSalary) {
+//             $query->where('salaryCoefficient', 'LIKE', '%' . $searchSalary . '%');
+//         }
 
-    // Lấy kết quả
-    $salarylevels = $query->get();
+//         // Lấy kết quả
+//         $salaries  = $query->get();
 
-    return view('fe_salary.salary', compact('salarylevels'));
-}
-
-    public function create()
-    {
-        return view('fe_salary.salary_create');
-    }
-
-    public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:50|unique:salary_level,name',
-        'monthly_salary' => 'required|string|unique:salary_level,monthly_salary',
-        'daily_salary' => 'required|string|unique:salary_level,daily_salary',
-    ], [
-        'name.required' => 'Tên bậc lương không được để trống!',
-        'name.unique' => 'Bậc lương này đã tồn tại!',
-        'monthly_salary.required' => 'Lương tháng không được để trống!',
-        'daily_salary.required' => 'Lương ngày không được để trống!',
-    ]);
-
-    $monthlySalary = $this->parseSalary($request->monthly_salary);
-    $dailySalary = $this->parseSalary($request->daily_salary);
-
-    // Kiểm tra xem lương tháng có lớn hơn lương ngày không
-    if ($monthlySalary <= $dailySalary) {
-        return redirect()->back()->withErrors(['monthly_salary' => 'Lương tháng phải lớn hơn lương ngày.']);
-    }
-
-    // Kiểm tra mức lương tháng và ngày đã tồn tại hay chưa
-    $existingSalaryLevel = salary_level::where('monthly_salary', $monthlySalary)
-        ->where('daily_salary', $dailySalary)
-        ->first();
-
-    if ($existingSalaryLevel) {
-        return redirect()->back()->withErrors([
-            'salary_level' => 'Mức này đã tồn tại. Vui lòng kiểm tra lại.'
-        ]);
-    }
-
-    // Thêm mức lương mới
-    $userId = auth()->user()->id;
-
-    salary_level::create([
-        'name' => $request->name,
-        'monthly_salary' => $monthlySalary,
-        'daily_salary' => $dailySalary,
-        'status' => 1,
-        'created_at' => now(),
-        'created_by' => $userId,
-        'updated_at' => now(),
-        'updated_by' => $userId,
-    ]);
-
-    return redirect()->route('salary')->with('success', 'Thêm thành công');
-}
+//         return view('fe_salary.salary', compact('salaries', 'departments', 'searchSalary'));
+//     }
 
 
+//     public function create()
+//     {
+//         $departments = Department::where('parent_id', 0)->get(); // Lấy những phòng ban có parent_id là 0
+//         return view('fe_salary.salary_create', compact('departments'));
+//     }
 
-        /**
-         * Parse a salary string into an integer
-         *
-         * @param string $salary salary string, e.g. "1,000,000 VND"
-         * @return int the parsed salary integer
-         */
-    private function parseSalary($salary)
-    {
-        return intval(str_replace(['₫', '.', ','], '', $salary));
-    }
+//     public function store(Request $request)
+//     {
+//         // Xác thực dữ liệu đầu vào
+//         $validatedData = $request->validate([
+//             'name' => 'required|string|max:50',
+//             'department_id' => 'required|exists:departments,id',
+//             'salaryCoefficient' => 'required|numeric|between:0,99.99',
+//             'monthlySalary' => 'required|numeric|between:0,9999999999.99',
+//             'status' => 'required|boolean',
+//         ], [
+//             'name.required' => 'Tên cấp báo báo bắt buộc.',
 
-    public function show($id)
-    {
-        // Tìm mức lương theo ID
-        $salaryLevel = Salary_level::with(['creator', 'updater'])->findOrFail($id);
+//             'department_id.required' => 'Phòng ban là bắt buộc.',
+//             'department_id.exists' => 'Phòng ban không tồn tại.',
+//             'salaryCoefficient.required' => 'Hệ số lương là bắt buộc.',
+//             'salaryCoefficient.numeric' => 'Hệ số lương phải là số.',
+//             'salaryCoefficient.between' => 'Hệ số lương phải từ 0 đến 99.99.',
+//             'monthlySalary.required' => 'Lương tháng là bắt buộc.',
+//             'monthlySalary.numeric' => 'Lương tháng phải là số.',
+//             'monthlySalary.between' => 'Lương tháng phải nằm trong khoảng 0 đến 9,999,999,999.99.',
+//         ]);
 
-        return view('fe_salary.salary_detail', compact('salaryLevel'));
-    }
-    public function edit($id)
-    {
-        // Tìm mức lương theo ID
-        $salaryLevel = Salary_level::findOrFail($id);
+//         // Chuyển đổi lương tháng từ chuỗi định dạng tiền tệ sang số
+//         $monthlySalary = $this->parseSalary($request->monthlySalary);
+//         if ($monthlySalary < 1000000) {
+//             return redirect()->back()->withErrors(['monthlySalary' => 'Lương tháng phải ít nhất là 1,000,000 VND.']);
+//         }
 
-        return view('fe_salary.salary_detail', compact('salaryLevel'));
-    }
+//         // Tạo mới Salary
+//         Salary::create([
+//             'name' => $validatedData['name'],
+//             'department_id' => $validatedData['department_id'], // department_id giờ đã có thể gán giá trị            'salaryCoefficient' => $validatedData['salaryCoefficient'],
+//             'salaryCoefficient' => $validatedData['salaryCoefficient'],
 
-    public function update(Request $request, $id)
-{
-    // Lấy mức lương từ cơ sở dữ liệu
-    $salaryLevel = salary_level::findOrFail($id);
+//             'monthlySalary' => $monthlySalary,
+//             'created_by' => auth()->user()->id,
+//             'updated_by' => auth()->user()->id,
+//         ]);
 
-    // Tiến hành validate
-    $request->validate([
-        'name' => 'required|string|max:50|unique:salary_level,name,' . $salaryLevel->id,
-        'monthly_salary' => 'required|string|unique:salary_level,monthly_salary,' . $salaryLevel->id,
-        'daily_salary' => 'required|string|unique:salary_level,daily_salary,' . $salaryLevel->id,
-    ], [
-        'name.required' => 'Tên bậc lương không được để trống!',
-        'name.unique' => 'Bậc lương này đã tồn tại.',
-        'monthly_salary.required' => 'Lương tháng không được để trống!',
-        'daily_salary.required' => 'Lương ngày không được để trống!',
-    ]);
+//         // Chuyển hướng với thông báo thành công
+//         return redirect()->route('salary')->with('success', 'Tạo lương thành công.');
+//     }
 
-    $monthlySalary = $this->parseSalary($request->monthly_salary);
-    $dailySalary = $this->parseSalary($request->daily_salary);
+//     /**
+//      * Parse a salary string into an integer
+//      *
+//      * @param string $salary salary string, e.g. "1,000,000 ₫"
+//      * @return float the parsed salary value
+//      */
+    
 
-    // Kiểm tra xem lương tháng có lớn hơn lương ngày không
-    if ($monthlySalary <= $dailySalary) {
-        return redirect()->back()->withErrors(['monthly_salary' => 'Lương tháng phải lớn hơn lương ngày.']);
-    }
 
-    // Kiểm tra mức lương tháng và ngày đã tồn tại hay chưa (trừ bản ghi hiện tại)
-    $existingSalaryLevel = salary_level::where('monthly_salary', $monthlySalary)
-        ->where('daily_salary', $dailySalary)
-        ->where('id', '!=', $salaryLevel->id)
-        ->first();
+//     public function show($id)
+//     {
+//         // Tìm mức lương theo ID
+//         $salaryLevel = Salary::with('department')->findOrFail($id);
 
-    if ($existingSalaryLevel) {
-        return redirect()->back()->withErrors([
-            'salary_level' => 'Mức lương này đã tồn tại. Vui lòng kiểm tra lại.'
-        ]);
-    }
+//         // Assuming `created_by` and `updated_by` are user IDs
+//         $creator = User::find($salaryLevel->created_by);
+//         $updater = User::find($salaryLevel->updated_by);   
+//              $departments = Department::where('parent_id', 0)->get(); // Lấy những phòng ban có parent_id là 0
 
-    // Cập nhật thông tin mức lương
-    $salaryLevel->update([
-        'name' => $request->name,
-        'monthly_salary' => $monthlySalary,
-        'daily_salary' => $dailySalary,
-        'status' => $request->status,
-        'updated_at' => now(),
-        'updated_by' => auth()->user()->id,
-    ]);
+//         return view('fe_salary.salary_detail', compact('salaryLevel', 'departments','creator', 'updater'));
+//     }
+//     public function edit($id)
+// {
+//     // Tìm mức lương theo ID
+//     $salary = Salary::findOrFail($id);
+//     $departments = Department::where('parent_id', 0)->get(); // Lấy những phòng ban có parent_id là 0
 
-    return redirect()->route('salary')->with('success', 'Cập nhật thành công');
-}
+//     // Trả về view để chỉnh sửa mức lương
+//     return view('fe_salary.salary_edit', compact('salary', 'departments'));
+// }
 
-// Phương thức destroy để xóa bậc lương
-public function destroy($id)
-{
-    // Tìm mức lương theo ID
-    $salaryLevel = salary_level::findOrFail($id);
+// // Add the update method
+// public function update(Request $request, $id)
+// {
+//     // Xác thực dữ liệu đầu vào
+//     $validatedData = $request->validate([
+//         'name' => 'required|string|max:50',
+//         'salaryCoefficient' => 'required|numeric|between:0,99.99',
+//         'monthlySalary' => 'required|numeric|between:0,9999999999.99',
+//         'status' => 'required|boolean',
+//     ], [
+//         'name.required' => 'Tên cấp báo bắt buộc.',
+//         'salaryCoefficient.required' => 'Hệ số lương là bắt buộc.',
+//         'salaryCoefficient.numeric' => 'Hệ số lương phải là số.',
+//         'salaryCoefficient.between' => 'Hệ số lương phải từ 0 đến 99.99.',
+//         'monthlySalary.required' => 'Lương tháng là bắt buộc.',
+//         'monthlySalary.numeric' => 'Lương tháng phải là số.',
+//         'monthlySalary.between' => 'Lương tháng phải nằm trong khoảng 0 đến 9,999,999,999.99.',
+//     ]);
+//     $status = $request->status == 1 ? true : false;
 
-    // Xóa mức lương
-    $salaryLevel->delete();
+//     // Chuyển đổi lương tháng từ chuỗi định dạng tiền tệ sang số
+//     $monthlySalary = $this->parseSalary($request->monthlySalary);
+    
+//     // Kiểm tra nếu lương tháng nhỏ hơn 1,000,000 VND
+//     if ($monthlySalary < 1000000) {
+//         return redirect()->back()->withErrors(['monthlySalary' => 'Lương tháng phải ít nhất là 1,000,000 VND.']);
+//     }
 
-    // Trả về trang danh sách với thông báo thành công
-    return redirect()->route('salary')->with('success', 'Xóa bậc lương thành công');
-}
+//     // Tìm mức lương cần cập nhật
+//     $salary = Salary::findOrFail($id);
 
-}
+//     // Cập nhật mức lương
+//     $salary->update([
+//         'name' => $validatedData['name'],
+//         'salaryCoefficient' => $validatedData['salaryCoefficient'],
+//         'monthlySalary' => $monthlySalary,
+//         'status' => $validatedData['status'], // Trạng thái true (1) hoặc false (0)
+//         'updated_by' => auth()->id(), // Cập nhật người thay đổi
+//     ]);
+
+//     // Chuyển hướng với thông báo thành công
+//     return redirect()->route('salary')->with('success', 'Cập nhật lương thành công.');
+// }
+
+// private function parseSalary($salary)
+//     {
+//         // Loại bỏ ₫ và dấu phẩy
+//         $salary = str_replace([',', '₫'], '', $salary);
+//         return (float) $salary; // Chuyển thành số thực để xử lý chính xác
+//     }
+// }

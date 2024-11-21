@@ -200,9 +200,9 @@
                                 @foreach ($employeeData['attendance'] as $date => $attendance)
                                     <tr>
                                         <td>{{ $date }}</td>
-                                        <td>{{ $attendance['checkIn'] ? $attendance['checkIn']->format('H:i') : 'Chưa check-in' }}</td>
-                                        <td>{{ $attendance['checkOut'] ? $attendance['checkOut']->format('H:i') : 'Chưa check-out' }}</td>
-                                        <td>{{ $attendance['hours'] }}</td>
+                                        <td>{{ $attendance['checkIn'] ? $attendance['checkIn']->format('H:i:s') : 'Chưa check-in' }}</td>
+                                        <td>{{ $attendance['checkOut'] ? $attendance['checkOut']->format('H:i:s') : 'Chưa check-out' }}</td>
+                                        <td>{{ gmdate('H:i:s', $attendance['hours'] * 3600) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

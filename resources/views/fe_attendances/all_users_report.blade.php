@@ -11,10 +11,11 @@
     <title>Danh sách người dùng</title>
 
     <!-- Custom fonts -->
-    <link href="{{ asset('fe-access/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{asset('fe-access/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
+
     <!-- Custom styles -->
-    <link href="{{ asset('fe-access/css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link href="{{asset('fe-access/css/sb-admin-2.min.css')}}" rel="stylesheet">
 </head>
 
 <body id="page-top">

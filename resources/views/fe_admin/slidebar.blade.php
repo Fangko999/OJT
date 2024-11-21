@@ -166,19 +166,19 @@
         }
 
         /* Hover effect */
-.nav-item .nav-link:hover {
-    background-color: #4e4e4e;
-    transform: translateX(5px);
-}
+        .nav-item .nav-link:hover {
+            background-color: #4e4e4e;
+            transform: translateX(5px);
+        }
 
-/* Active link effect */
-.nav-item.active .nav-link {
-    background-color: #6c757d;
-    font-weight: bold;
-    color: #fff;
-    box-shadow: inset 4px 0 0 0 #007bff; /* Đường viền bên trái */
-}
-
+        /* Active link effect */
+        .nav-item.active .nav-link {
+            background-color: #6c757d;
+            font-weight: bold;
+            color: #fff;
+            box-shadow: inset 4px 0 0 0 #007bff;
+            /* Đường viền bên trái */
+        }
     </style>
 </head>
 
@@ -187,61 +187,76 @@
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
 
-    <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-        <div class="sidebar-brand-icon rotate-n-15">
-        </div>
-        <div class="sidebar-brand-text mx-3">Quản lý nhân viên</div>
-    </a>
-
-    <!-- Divider -->
-    <hr class="sidebar-divider my-0">
-
-    <!-- Grouped Navigation Items -->
-    <div class="nav-group">
-        <!-- Nav Item - Phòng ban -->
-        <li class="nav-item {{ request()->is('departments*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('departments') }}">
-                <i class="fas fa-building"></i>
-                <span>Phòng ban</span>
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <div class="sidebar-brand-icon rotate-n-15">
+                </div>
+                <div class="sidebar-brand-text mx-3">Quản lý nhân viên</div>
             </a>
-        </li>
 
-        <!-- Nav Item - Nhân viên -->
-        <li class="nav-item {{ request()->is('users*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('users') }}">
-                <i class="fas fa-users"></i>
-                <span>Nhân viên</span>
-            </a>
-        </li>
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
 
-        <!-- Nav Item - Quản lý chấm công -->
-        <li class="nav-item {{ (Route::currentRouteName() == 'department.report') ? 'active' : '' }}">
-    <a class="nav-link" href="{{ route('department.report') }}">
-        <i class="fas fa-fw fa-tachometer-alt"></i>
-        <span>Quản lý chấm công</span>
-    </a>
-</li>
+            <!-- Grouped Navigation Items -->
+            <div class="nav-group">
+                <!-- Nav Item - Phòng ban -->
+                <li class="nav-item {{ request()->is('departments*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('departments') }}">
+                        <i class="fas fa-building"></i>
+                        <span>Phòng ban</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Nhân viên -->
+                <li class="nav-item {{ request()->is('users*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('users') }}">
+                        <i class="fas fa-users"></i>
+                        <span>Nhân viên</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Quản lý chấm công -->
 
 
-        <!-- Nav Item - Quản lý bậc lương -->
-        <li class="nav-item {{ request()->is('salary*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('salary') }}">
-                <i class="fas fa-fw fa-tachometer-alt"></i>
-                <span>Quản lý bậc lương</span>
-            </a>
-        </li>
-    </div>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('department.report') }}">
 
-    <!-- Divider -->
-    <hr class="sidebar-divider d-none d-md-block">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Báo cáo chấm công</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.manageAttendances') }}">
 
-    <!-- Sidebar Toggler (Sidebar) -->
-    <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
-    </div>
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Xem giải trình</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('setting.edit') }}">
 
-</ul>
+                        <i class="fas fa-clock"></i>
+                        <span>Thời gian chấm công</span>
+                    </a>
+                </li>
+                <!-- Nav Item - Quản lý bậc lương -->
+                <li class="nav-item {{ request()->is('salary*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('salary') }}">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Quản lý bậc lương</span>
+                    </a>
+                </li>
+            </div>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
 
 
         <!-- Content Wrapper -->

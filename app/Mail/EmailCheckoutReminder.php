@@ -30,7 +30,7 @@ class EmailCheckoutReminder extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Email nhắc nhở chấm công ',
+            subject: 'Email nhắc nhở check out ',
         );
     }
 

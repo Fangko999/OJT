@@ -3,22 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nhắc nhở chấm công check-in</title>
+    <title>Nhắc nhở Check Out</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background-color: #4CAF50;
+            color: #ffffff;
+            text-align: center;
+            padding: 15px;
+        }
+        .email-content {
+            padding: 20px;
+        }
+        .email-footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            color: #777;
+            border-top: 1px solid #ddd;
+        }
+        a.button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        a.button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; padding: 20px;">
-        <h2 style="color: #333;">Nhắc nhở chấm công check-out</h2>
-        <p>Kính gửi <strong>[{{ $user->name }}]</strong>,</p>
-        <p>
-            Xin vui lòng nhớ thực hiện chấm công <strong>Check-out</strong> khi đến văn phòng hôm nay. 
-            Việc này rất quan trọng để đảm bảo ghi nhận thời gian làm việc của bạn.
-        </p>
-        <p>Nếu cần hỗ trợ, hãy liên hệ với chúng tôi.</p>
-        <p>Cảm ơn bạn!</p>
-        <p>
-            Trân trọng,<br>
-           
-        </p>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Nhắc nhở Check Out</h1>
+        </div>
+        <div class="email-content">
+            <p>Chào <strong>[{{ $user->name }}]</strong>,</p>
+            <p>Đây là email nhắc nhở bạn thực hiện check out. Vui lòng click vào liên kết bên dưới để hoàn thành check out:</p>
+            <p><a href="http://localhost/EMS%202/login" class="button">Check Out Ngay</a></p>
+            <p>Cảm ơn bạn!</p>
+            <p>Trân trọng,</p>
+            <p><strong>Công ty AAA</strong></p>
+        </div>
+        <div class="email-footer">
+            <p>© {{ date('Y') }} Công ty AAA. Mọi quyền được bảo lưu.</p>
+        </div>
     </div>
 </body>
 </html>

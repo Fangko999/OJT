@@ -51,31 +51,4 @@ class User_attendance extends Model
     // Lưu thay đổi
     $this->save();
 }
-
-public function monthlyReport(Request $request)
-{
-    // ...existing code...
-    for ($day = 1; $day <= $daysInMonth; $day++) {
-        // ...existing code...
-        if ($attendances->isNotEmpty()) {
-            foreach ($attendances as $attendance) {
-                // ...existing code...
-                if ($type === 'in') {
-                    $employeeData['attendance'][$date->toDateString()]['checkIn'] = $attendance->time;
-                } elseif ($type === 'out') {
-                    $checkInTime = $employeeData['attendance'][$date->toDateString()]['checkIn'];
-                    if ($checkInTime !== null) {
-                        $checkOutTime = $attendance->time;
-                        $hoursWorked = Carbon::parse($checkInTime)->diffInSeconds(Carbon::parse($checkOutTime));
-                        $employeeData['attendance'][$date->toDateString()]['checkOut'] = $checkOutTime;
-                        $employeeData['attendance'][$date->toDateString()]['hours'] = gmdate('H:i:s', $hoursWorked);
-                    }
-                }
-            }
-        }
-    }
-    // ...existing code...
-}
-
-    
 }

@@ -16,23 +16,28 @@ class EmailReminder extends Mailable
     use Queueable, SerializesModels;
 
     private User $user;
-    private User $reminderTime;
+    // private User $reminderTime;
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, $reminderTime)
+//     public function __construct(User $user, $reminderTime)
+// {
+//     $this->user = $user; // Gán đúng đối tượng $user
+//     // $this->reminderTime = $reminderTime;
+// }
+
+public function __construct(User $user)
 {
     $this->user = $user; // Gán đúng đối tượng $user
-    $this->reminderTime = $reminderTime;
+    // $this->reminderTime = $reminderTime;
 }
-
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Email nhắc nhở chấm công ',
+            subject: 'Email nhắc nhở check in ',
         );
     }
 
@@ -45,7 +50,7 @@ class EmailReminder extends Mailable
             view: 'fe_email.email_reminder',
             with: [
                 'user' => $this->user,  // Thêm dấu phẩy ở đây
-                'reminder_time' => $this->user->reminder_time,
+                // 'reminder_time' => $this->user->reminder_time,
                 
             ]
         );

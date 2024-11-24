@@ -21,7 +21,7 @@ class EmailCheckoutReminder extends Mailable
      */
     public function __construct(User $user)
 {
-    $this->user = $user; // Gán đúng đối tượng $user
+    $this->user = $user;
 }
 
     /**

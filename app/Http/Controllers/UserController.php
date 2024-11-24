@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Exports\UsersExport;
 use App\Exports\UserTemplateExport;
 use App\Imports\UsersImport;
-use App\Models\Salary;
+use App\Models\SalaryLevel;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
@@ -186,9 +186,9 @@ class UserController extends Controller
     
     public function showDetail($id)
     {
-        $user = User::with(['department', 'salary'])->findOrFail($id);
+        $user = User::with(['department', 'salaryLevel'])->findOrFail($id);
         $departments = Department::where('parent_id', 0)->get();
-        $salaries = Salary::all(); // Lấy tất cả hệ số lương
+        $salaries = SalaryLevel::all(); // Load all salary levels
     
         $subDepartments = $user->department && $user->department->parent_id 
             ? Department::where('parent_id', $user->department->parent_id)->get() 
@@ -199,15 +199,15 @@ class UserController extends Controller
 
     public function editUser(Request $request, $id)
     {
-        $user = User::with(['department', 'salaries'])->findOrFail($id);
+        $user = User::with(['department', 'salaryLevel'])->findOrFail($id);
         $departments = Department::where('parent_id', 0)->get();
     
         $subDepartments = [];
-        $salaryCoefficient = $user->salary ? $user->salary->salaryCoefficient : 1.00;
+        $salaryCoefficient = $user->salaryLevel ? $user->salaryLevel->salary_coefficient : 1.00;
     
-        if ($request->has('salary_id')) {
-            $salary =Salary::find($request->input('salary_id'));
-            $salaryCoefficient = $salary ? $salary->salaryCoefficient : $salaryCoefficient;
+        if ($request->has('salary_level_id')) {
+            $salaryLevel = SalaryLevel::find($request->input('salary_level_id'));
+            $salaryCoefficient = $salaryLevel ? $salaryLevel->salary_coefficient : $salaryCoefficient;
         }
     
         return view('fe_user/user_detail', compact('user', 'departments', 'subDepartments', 'salaryCoefficient'));
@@ -223,7 +223,7 @@ class UserController extends Controller
             'position' => 'required|string',
             'department_id' => 'required|exists:departments,id',
             'status' => 'required|string',
-            'salary_id' => 'required|exists:salaries,id', // Xác thực salary_id
+            'salary_level_id' => 'required|exists:salary_levels,id', // Xác thực salary_level_id
         ]);
     
         if ($validator->fails()) {
@@ -231,7 +231,7 @@ class UserController extends Controller
         }
     
         $user->update($request->only([
-            'email', 'phone_number', 'position', 'department_id', 'status', 'salary_id'
+            'email', 'phone_number', 'position', 'department_id', 'status', 'salary_level_id'
         ]) + ['updated_by' => Auth::id()]);
     
         return redirect()->route('users.detail', ['id' => $user->id])
@@ -285,16 +285,19 @@ public function saveReminderSettings(Request $request)
     // Lấy người dùng hiện tại từ Auth
     $user = Auth::user();
 
-    // Validate rằng reminder_time phải có định dạng H:i
+    // Validate rằng remind_checkin và remind_checkout phải có định dạng H:i
     $request->validate([
-        'reminder_time' => 'required|date_format:H:i',
+        'remind_checkin' => 'required|date_format:H:i',
+        'remind_checkout' => 'required|date_format:H:i',
     ]);
 
     // Lấy thời gian nhắc nhở từ form và thêm phần giây
-    $reminderTime = $request->input('reminder_time') . ':00'; // Thêm phần giây
+    $remindCheckin = $request->input('remind_checkin') . ':00'; // Thêm phần giây
+    $remindCheckout = $request->input('remind_checkout') . ':00'; // Thêm phần giây
 
     // Chuyển đổi thời gian thành định dạng H:i:s
-    $user->reminder_time = Carbon::createFromFormat('H:i:s', $reminderTime)->format('H:i:s');
+    $user->remind_checkin = Carbon::createFromFormat('H:i:s', $remindCheckin)->format('H:i:s');
+    $user->remind_checkout = Carbon::createFromFormat('H:i:s', $remindCheckout)->format('H:i:s');
 
     // Lưu lại thông tin người dùng
     if ($user->save()) {
@@ -303,9 +306,4 @@ public function saveReminderSettings(Request $request)
         return back()->withErrors(['error' => 'Lỗi khi cập nhật thời gian nhắc nhở']);
     }
 }
-
-
-   
-
-   
 }

@@ -27,9 +27,11 @@ class User extends Authenticatable
         'status',
         'position',
         'department_id',
-        'salary_id',
+        'salary_level_id',
         'role',
         'reminder_time',
+        'remind_checkin',
+        'remind_checkout',
         'created_at',
         'created_by',
         'updated_at',
@@ -73,9 +75,14 @@ public function updater()
 {
     return $this->belongsTo(User::class, 'updated_by');
 }
-public function salary()
-{
-    return $this->belongsTo(Salary::class, 'salary_id', 'id');
-}
+public function salaryLevel()
+    {
+        return $this->belongsTo(SalaryLevel::class, 'salary_level_id');
+    }
+
+protected $attributes = [
+        'remind_checkin' => '08:00:00',
+        'remind_checkout' => '17:00:00',
+];
 
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,6 +15,7 @@
     <!-- Include Cleave.js -->
     <script src="https://cdn.jsdelivr.net/npm/cleave.js"></script>
 </head>
+
 <body id="page-top">
     <div id="wrapper">
         @include('fe_admin.slidebar')
@@ -21,118 +23,81 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 @include('fe_admin.topbar')
-                
-                <div class="container-fluid">
-                    @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Danh sách Bậc Lương</h1>
-                    </div>
-                    
-                    <h1>Thêm</h1>
-                    
-                    <form action="{{ route('salary.store') }}" method="POST" class="p-4 bg-white shadow rounded">
+                <div class="container pt-5 mb-5">
+                    <h2 style="font-weight: bold">Thêm Bậc Lương</h2>
+                    <a href="{{ route('salaryLevels') }}" class="btn btn-danger mb-3">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+
+                    <form action="{{ route('salaryLevels.store') }}" method="POST">
                         @csrf
-                       
-                        {{-- Chọn Phòng Ban --}}
-                        <div class="form-group">
-                            <label for="department_id">Phòng ban</label>
-                            <select name="department_id" id="department_id" class="form-control" required>
-                                <option value="">Chọn phòng ban</option>
-                                @foreach ($departments as $department)
-                                    <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="form-group row">
+                            <label for="name" class="col-sm-2 col-form-label">Tên Bậc Lương</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
                         </div>
 
-                        {{-- Bậc Lương --}}
-                        <div class="form-group">
-                            <label for="name">Bậc Lương</label>
-                            <input type="text" name="name" id="name" class="form-control" required>
+                        <div class="form-group row">
+                            <label for="salary_coefficient" class="col-sm-2 col-form-label">Hệ Số Bậc Lương</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="salary_coefficient" name="salary_coefficient" step="any" required>
+                            </div>
                         </div>
 
-                        {{-- Hệ số lương --}}
-                        <div class="form-group">
-                            <label for="salaryCoefficient">Hệ số lương</label>
-                            <input type="number" name="salaryCoefficient" id="salaryCoefficient" class="form-control" step="0.01" min="0" max="99.99" required>
+                        <div class="form-group row">
+                            <label for="monthly_salary" class="col-sm-2 col-form-label">Lương theo tháng (VND)</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="monthlySalary" name="monthly_salary" oninput="formatMoney(this)" required>
+                            </div>
                         </div>
 
-                        {{-- Lương tháng --}}
-                        <div class="mb-3">
-                            <label for="monthlySalary" class="form-label">Lương Tháng:</label>
-                            <input type="text" name="monthlySalary" id="monthlySalary"
-                                   class="form-control money-input" placeholder="Nhập lương tháng" required>
-                            <small id="monthly_display" class="form-text text-muted">
-                                Bạn đã nhập: 0 ₫
-                            </small>
-                        </div>
-
-                        {{-- Nút submit --}}
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{{ route('salary') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Quay Lại
-                            </a>
-                            <button type="submit" class="btn btn-primary">Thêm</button>
+                        <div class="form-group row">
+                            <div class="col-sm-10 offset-sm-2">
+                                <button type="submit" class="btn btn-primary">Thêm Bậc Lương</button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
-
             <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>© {{ date('Y') }} Your Company. All Rights Reserved.</span>
+                    <div class="container my-auto">
+                        <div class="copyright text-center my-auto">
+                            <span>© {{ date('Y') }} Your Company. All Rights Reserved.</span>
+                        </div>
                     </div>
-                </div>
-            </footer>
+                </footer>
         </div>
-    </div>
 
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
+        </div>
+        <!-- Bootstrap core JavaScript-->
+        <script src="fe-access/vendor/jquery/jquery.min.js"></script>
+        <script src="fe-access/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="fe-access/vendor/jquery-easing/jquery.easing.min.js"></script>
+        <script src="fe-access/js/sb-admin-2.min.js"></script>
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="fe-access/vendor/jquery/jquery.min.js"></script>
-    <script src="fe-access/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="fe-access/vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="fe-access/js/sb-admin-2.min.js"></script>
+        <!-- Initialize Cleave.js -->
+        <script>
+            const cleaveMonthly = new Cleave('#monthlySalary', {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                numeralDecimalScale: 2,
+                noImmediatePrefix: true
+            });
 
-    <!-- Initialize Cleave.js -->
-    <script>
-        const cleaveMonthly = new Cleave('#monthlySalary', {
-            numeral: true,
-            numeralThousandsGroupStyle: 'thousand',
-            numeralDecimalScale: 2,
-            noImmediatePrefix: true
-        });
-    
-        const monthlyInput = document.getElementById('monthlySalary');
-        const monthlyDisplay = document.getElementById('monthly_display');
-    
-        monthlyInput.addEventListener('input', () => {
-            monthlyDisplay.textContent = `Bạn đã nhập: ${monthlyInput.value}`;
-        });
-    
-        document.querySelector('form').addEventListener('submit', function (event) {
-            const cleanedSalary = monthlyInput.value.replace(/[^0-9.]/g, ''); 
-            monthlyInput.value = cleanedSalary;
-        });
-    </script>
-    
+            const monthlyInput = document.getElementById('monthlySalary');
+
+            document.querySelector('form').addEventListener('submit', function(event) {
+                const cleanedSalary = monthlyInput.value.replace(/[^0-9.]/g, '');
+                monthlyInput.value = cleanedSalary;
+            });
+        </script>
+
 </body>
+
 </html>

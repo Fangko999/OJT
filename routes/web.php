@@ -11,6 +11,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Salary_caculate;
 use App\Http\Controllers\SalaryController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SalaryLevelController;
+use App\Http\Controllers\PayrollController;
 use App\Models\Salary;
 use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
@@ -74,10 +76,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/users/{id}/update-detail', [UserController::class, 'updateUser'])->name('users.updatedetail');
     Route::get('/reminder-settings', [UserController::class, 'showReminderForm'])->name('reminder.settings');
     Route::post('/reminder-settings', [UserController::class, 'saveReminderSettings'])->name('reminder.save');
-    Route::get('/setting/edit',[SettingController::class, 'edit'])->name('setting.edit');
-    Route::post('/setting/update',[SettingController::class, 'update'])->name('setting.update');
+    Route::get('/setting/edit', [SettingController::class, 'edit'])->name('setting.edit');
+    Route::post('/setting/update', [SettingController::class, 'update'])->name('setting.update');
     Route::post('/settings/update-reminder-time-checkout', [SettingController::class, 'updateReminderTimeCheckout'])->name('setting.updateReminderTimeCheckout');
-
 });
 
 // Attendance routes (role = 2)
@@ -101,11 +102,28 @@ Route::middleware('auth')->group(function () {
 //     return Excel::download(new UsersExport, 'users.xlsx');
 // });
 
+// Route::middleware('auth')->group(function () {
+//    Route::get('/salary-levels', [SalaryLevelController::class, 'index'])->name('salary_levels.index');
+//    Route::get('/salary-levels/create', [SalaryLevelController::class, 'create'])->name('salary_levels.create');
+//    Route::post('/salary-levels', [SalaryLevelController::class, 'store'])->name('salary_levels.store');
+//    Route::get('/salary-levels/{id}', [SalaryLevelController::class, 'show'])->name('salary_levels.show');
+//    Route::get('/salary-levels/{id}/edit', [SalaryLevelController::class, 'edit'])->name('salary_levels.edit');
+//    Route::put('/salary-levels/{id}', [SalaryLevelController::class, 'update'])->name('salary_levels.update');
+//    Route::delete('/salary-levels/{id}', [SalaryLevelController::class, 'destroy'])->name('salary_levels.destroy');
+// });
 Route::middleware('auth')->group(function () {
-   Route::get('/salary',[SalaryController::class, 'index'])->name('salary');
-   Route::get('/salary/create',[SalaryController::class, 'create'])->name('salary.create');
-   Route::post('/salary',[SalaryController::class, 'store'])->name('salary.store');
-   Route::get('/salary/{id}',[SalaryController::class, 'show'])->name('salary.show');
-   Route::get('/salary/{id}/edit',[SalaryController::class, 'edit'])->name('salary.edit');
-   Route::put('/salary/{id}/update',[SalaryController::class, 'update'])->name('salary.update');
+    Route::get('/salaryLevels', [SalaryLevelController::class, 'index'])->name('salaryLevels');
+
+    Route::get('/salaryLevels/create', [SalaryLevelController::class, 'create'])->name('salaryLevels.create');
+    Route::post('/salaryLevels', [SalaryLevelController::class, 'store'])->name('salaryLevels.store');
+
+    Route::get('/salaryLevels/{id}/edit', [SalaryLevelController::class, 'edit'])->name('salaryLevels.edit');
+    Route::put('/salaryLevels/{id}', [SalaryLevelController::class, 'update'])->name('salaryLevels.update');
+
+    Route::delete('/salaryLevels/soft-delete', [SalaryLevelController::class, 'softDeleteMultiple'])->name('salaryLevels.softDeleteMultiple');
+    Route::get('/payroll/calculate', [PayrollController::class, 'showPayrollForm'])->name('payroll.form');
+    Route::post('/payroll/calculate', [PayrollController::class, 'calculatePayroll'])->name('payroll.calculate');
+    Route::post('/payroll/store', [PayrollController::class, 'storePayroll'])->name('payroll.store');
+
+    Route::get('/payrolls', [PayrollController::class, 'showPayrolls'])->name('payrolls.index');
 });

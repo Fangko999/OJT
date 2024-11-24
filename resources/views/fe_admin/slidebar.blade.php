@@ -202,7 +202,7 @@
                 <!-- Nav Item - Phòng ban -->
                 <li class="nav-item {{ request()->is('departments*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('departments') }}">
-                        <i class="fas fa-building"></i>
+                        <i class="fas fa-sitemap"></i>
                         <span>Phòng ban</span>
                     </a>
                 </li>
@@ -216,37 +216,41 @@
                 </li>
 
                 <!-- Nav Item - Quản lý chấm công -->
-
-
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('department.report') }}">
-
-                        <i class="fas fa-chart-pie"></i>
+                        <i class="fas fa-file-alt"></i>
                         <span>Báo cáo chấm công</span>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('admin.manageAttendances') }}">
-
-                        <i class="fas fa-exclamation-circle"></i>
+                        <i class="fas fa-clipboard-check"></i>
                         <span>Xem giải trình</span>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('setting.edit') }}">
-
-                        <i class="fas fa-clock"></i>
+                        <i class="fas fa-cogs"></i>
                         <span>Thời gian chấm công</span>
                     </a>
                 </li>
                 <!-- Nav Item - Quản lý bậc lương -->
-                <li class="nav-item {{ request()->is('salary*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('salary') }}">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>Quản lý bậc lương</span>
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('salaryLevels') }}">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>Quản lý bậc lương </span></a>
+                </li>
+
+                <!-- Nav Item - Tính lương -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('payrolls.index') }}">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>Tính lương </span></a>
                 </li>
             </div>
+            
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">

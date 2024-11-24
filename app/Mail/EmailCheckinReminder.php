@@ -2,49 +2,41 @@
 
 namespace App\Mail;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 
-class JustificationSubmitted extends Mailable
+class EmailCheckinReminder extends Mailable
 {
     use Queueable, SerializesModels;
-    public $attendance;
 
+    private User $user;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct($attendance)
-    {
-        $this->attendance = $attendance;
-    }
+public function __construct(User $user)
+{
+    $this->user = $user;
+}
 
-    public function build()
-    {
-        return $this->subject('Lý do giải trình từ nhân viên')
-                    ->view('fe_email.justification_submitted');
-    }
-    /**
-     * Get the message envelope.
-     */
-        public function envelope(): Envelope
+    public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Justification Submitted',
+            subject: 'Email nhắc nhở check in ',
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'fe_email.email_reminder',
+            with: [
+                'user' => $this->user,
+                
+            ]
         );
     }
 

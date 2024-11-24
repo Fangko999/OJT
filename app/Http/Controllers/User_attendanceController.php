@@ -149,7 +149,7 @@ public function approveAttendance($id)
     if ($attendance->status == 2) {
         $attendance->status = 1; // Chấp nhận lý do, chuyển thành hợp lệ
         $attendance->save();
-        return redirect()->back()->with('message', 'Trạng thái đã được thay đổi thành "Hợp lệ".');
+        return redirect()->back()->with('message', 'Đã chấp nhận lý do giải trình!');
     }
     
     return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.');
@@ -162,7 +162,7 @@ public function rejectAttendance($id)
     if ($attendance->status == 2) {
         $attendance->status = 3; // Đã từ chối
         $attendance->save();
-        return redirect()->back()->with('message', 'Lý do giải trình đã bị từ chối.');
+        return redirect()->back()->with('message', 'Đã từ chối lý do giải trình!');
     }
     
     return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.');

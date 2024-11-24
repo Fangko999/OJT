@@ -95,17 +95,19 @@
             <div id="content">
                 @include('fe_admin.topbar')
 
+
+
                 <div class="container-fluid">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="mb-0">Quản lý chấm công</h4>
+                            <h4 class="mb-0">Xem giải trình</h4>
                         </div>
                         <div class="card-body">
                             @if(session('message'))
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                    {{ session('message') }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('message') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                             @endif
 
                             <table class="table table-bordered table-striped text-center">
@@ -120,27 +122,33 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if ($invalidAttendances->isEmpty())
+                                    <tr>
+                                        <td colspan="6">Hiện không có lý do giải trình nào</td>
+                                    </tr>
+                                    @else
                                     @foreach ($invalidAttendances as $attendance)
-                                        @if ($attendance->status == 2)
-                                            <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $attendance->user->name }}</td>
-                                                <td>{{ $attendance->time->format('H:i d/m/Y') }}</td>
-                                                <td>{{ ucfirst($attendance->type) }}</td>
-                                                <td>{{ $attendance->justification }}</td>
-                                                <td>
-                                                    <form action="{{ route('admin.approveAttendance', $attendance->id) }}" method="POST" style="display:inline;">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-success">Chấp nhận lý do</button>
-                                                    </form>
-                                                    <form action="{{ route('admin.rejectAttendance', $attendance->id) }}" method="POST" style="display:inline;">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-danger">Từ chối lý do</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        @endif
+                                    @if ($attendance->status == 2)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $attendance->user->name }}</td>
+                                        <td>{{ $attendance->time->format('H:i d/m/Y') }}</td>
+                                        <td>{{ ucfirst($attendance->type) }}</td>
+                                        <td>{{ $attendance->justification }}</td>
+                                        <td>
+                                            <form action="{{ route('admin.approveAttendance', $attendance->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success">Chấp nhận lý do</button>
+                                            </form>
+                                            <form action="{{ route('admin.rejectAttendance', $attendance->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-danger">Từ chối lý do</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    @endif
                                     @endforeach
+                                    @endif
                                 </tbody>
                             </table>
 

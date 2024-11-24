@@ -139,11 +139,11 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="salary_id">Chọn hệ số lương</label>
-                                        <select name="salary_id" id="salary_id" class="form-control">
+                                        <label for="salary_level_id">Chọn bậc lương</label>
+                                        <select name="salary_level_id" id="salary_level_id" class="form-control">
                                             @foreach ($salaries as $salary)
-                                                <option value="{{ $salary->id }}" data-department="{{ $salary->department_id }}" {{ $user->salary_id == $salary->id ? 'selected' : '' }}>
-                                                    {{ $salary->salaryCoefficient }}
+                                                <option value="{{ $salary->id }}" {{ $user->salary_level_id == $salary->id ? 'selected' : '' }}>
+                                                    {{ $salary->level_name }}
                                                 </option>
                                             @endforeach
                                         </select>

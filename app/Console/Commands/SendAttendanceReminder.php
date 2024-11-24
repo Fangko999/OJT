@@ -33,25 +33,22 @@ class SendAttendanceReminder extends Command
     
     public function handle()
     {
-        // Lấy tất cả người dùng có `reminder_time` đúng với thời gian hiện tại
         $currentTime = Carbon::now()->format('H:i');
 
-        $checkinTime = '22:44';
-        if ($currentTime === $checkinTime) {
-            $checkinUsers = User::all();  // Lấy tất cả người dùng để gửi nhắc nhở checkout
-            foreach ($checkinUsers as $user) {
-                Mail::to($user->email)->send(new EmailReminder($user, 'checkin'));
-                $this->info("Check-in email sent to {$user->email} at $checkinTime");
-            }
+        // Send check-in reminders
+        $checkinUsers = User::where('remind_checkin', $currentTime)->get();
+        foreach ($checkinUsers as $user) {
+            Mail::to($user->email)->send(new EmailCheckinReminder($user, 'checkin'));
+            $this->info("Check-in email sent to {$user->email} at {$user->remind_checkin}");
         }
-        $checkoutTime = '22:47';
-        if ($currentTime === $checkoutTime) {
-            $checkoutUsers = User::all();  // Lấy tất cả người dùng để gửi nhắc nhở checkout
-            foreach ($checkoutUsers as $user) {
-                Mail::to($user->email)->send(new EmailCheckoutReminder($user, 'checkout'));
-                $this->info("Check-out email sent to {$user->email} at $checkoutTime");
-            }
+
+        // Send check-out reminders
+        $checkoutUsers = User::where('remind_checkout', $currentTime)->get();
+        foreach ($checkoutUsers as $user) {
+            Mail::to($user->email)->send(new EmailCheckoutReminder($user, 'checkout'));
+            $this->info("Check-out email sent to {$user->email} at {$user->remind_checkout}");
         }
+
         return Command::SUCCESS;
     }
 }

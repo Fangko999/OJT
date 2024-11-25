@@ -24,9 +24,53 @@
             <div id="content">
                 @include('fe_admin.topbar')
 
-
-
-
+                <div class="container pt-5 mb-5">
+                    <div class="row">
+                        <div class="col-md-9">
+                            <h2 class="font-weight-bold">Kết Quả Tính Lương</h2>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <td>{{ $user->name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Hệ số lương</th>
+                                    <td>{{ $salaryCoefficient }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Số ngày công hợp lệ</th>
+                                    <td>{{ $validDays }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Số ngày công không hợp lệ</th>
+                                    <td>{{ $invalidDays }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Lương nhận được</th>
+                                    <td>{{ number_format($salaryReceived, 0) }} VND</td>
+                                </tr>
+                            </table>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ route('payroll.store') }}" class="btn btn-success"
+                                    onclick="event.preventDefault(); 
+                                         document.getElementById('payroll-form').submit();">
+                                    Lưu
+                                </a>
+                                <a href="{{ route('payroll.form') }}" class="btn btn-danger mb-3">
+                                    Quay lại
+                                </a>
+                            </div>
+                            <form id="payroll-form" action="{{ route('payroll.store') }}" method="POST" style="display: none;">
+                                @csrf
+                                <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                <input type="hidden" name="salary_received" value="{{ $salaryReceived }}">
+                                <input type="hidden" name="valid_days" value="{{ $validDays }}">
+                                <input type="hidden" name="invalid_days" value="{{ $invalidDays }}">
+                                <input type="hidden" name="salary_coefficient" value="{{ $salaryCoefficient }}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">

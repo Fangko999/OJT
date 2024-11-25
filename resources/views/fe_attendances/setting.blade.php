@@ -32,44 +32,44 @@
         }
         /* Form styling */
         .form-container {
-            max-width: 600px; /* Adjusted width */
+            max-width: 600px;
             margin: 0 auto;
             padding: 30px;
-            background: #ffffff; /* Changed background color */
-            border-radius: 10px; /* Adjusted border radius */
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2); /* Adjusted box shadow */
+            background: #f8f9fa; /* Light gray background */
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
         }
         .form-container label {
-            font-weight: 700; /* Adjusted font weight */
-            margin-bottom: 10px; /* Adjusted margin */
-            color: #343a40; /* Changed to dark gray */
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #212529; /* Dark gray text */
         }
         .form-container input[type="time"] {
             width: 100%;
-            padding: 12px; /* Adjusted padding */
-            border: 1px solid #ced4da; /* Adjusted border color */
-            border-radius: 5px; /* Adjusted border radius */
-            margin-bottom: 20px; /* Adjusted margin */
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-bottom: 20px;
         }
         .form-container button {
             width: 100%;
-            padding: 12px; /* Adjusted padding */
+            padding: 12px;
             color: #fff;
-            background-color: #4e73df; /* Changed to primary color */
+            background-color: #343a40; /* Dark gray background */
             border: none;
-            border-radius: 5px; /* Adjusted border radius */
+            border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
         }
         .form-container button:hover {
-            background-color: #2e59d9; /* Changed to darker primary color */
+            background-color: #23272b; /* Darker gray background */
         }
         .message {
             padding: 15px;
-            background-color: #e9ecef; /* Adjusted background color */
-            color: #343a40; /* Changed to dark gray */
-            border-radius: 5px; /* Adjusted border radius */
-            margin-bottom: 20px; /* Adjusted margin */
+            background-color: #e9ecef;
+            color: #212529;
+            border-radius: 5px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -89,8 +89,8 @@
                 
                     <div class="form-container">
                         <!-- Tiêu đề cho form -->
-                        <h2 class="text-center mb-4">Cài đặt thời gian chấm công</h2>
-                        <p class="text-center mb-4">Vui lòng nhập thời gian check-in và check-out hợp lệ.</p>
+                        <h2 class="text-center mb-4">Cài đặt thời gian chấm công hợp lệ</h2>
+                        
                 
                         <form action="{{ route('setting.update') }}" method="POST">
                             @csrf

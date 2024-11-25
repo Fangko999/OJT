@@ -17,78 +17,70 @@
 </head>
 
 <body id="page-top">
-<div class="container pt-5">
-        <!-- Flash messages -->
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <p style="color: red;">{{ $error }}</p>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    <div id="wrapper">
+        @include('fe_admin.slidebar')
 
-        <!-- Content -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                @include('fe_admin.topbar')
+
+                <div class="container pt-5 mb-5">
+        <h2 style="font-weight: bold">Tính lương cho nhân viên</h2>
         <div class="row">
-
             <div class="col-md-9">
-                <div class="d-flex justify-content-between align-items-center">
-                    <form action="{{ route('payrolls.index') }}" method="GET" class="form-inline">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm..."
-                                value="{{ $search }}" style="max-width: 250px;">
-                            <button type="submit" class="btn btn-primary ml-2">Tìm kiếm</button>
-                        </div>
-                    </form>
-                    <a href="{{ route('payrolls.export') }}" class="btn btn-success mb-3">Xuất file</a>
-                </div>
-
-                <!-- Bảng payrolls -->
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Nhân viên</th>
-                            <th>Hệ số lương</th>
-                            <th>Số ngày công hợp lệ</th>
-                            <th>Số ngày công không hợp lệ</th>
-                            <th>Lương nhận được</th>
-                            <th>Ngày tính lương</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($payrolls as $payroll)
-                            <tr>
-                                <td>{{ $payroll->user->name }}</td>
-                                <td>{{ $payroll->salary_coefficient }}</td>
-                                <td>{{ $payroll->valid_days }}</td>
-                                <td>{{ $payroll->invalid_days }}</td>
-                                <td>{{ number_format($payroll->salary_received, 0) }} VND</td>
-                                <td>{{ $payroll->created_at->format('d/m/Y') }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
-                <!-- Phân trang -->
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $payrolls->appends(request()->input())->onEachSide(2)->links() }}
-                </div>
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <p style="color: red;">{{ $error }}</p>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                <form action="{{ route('payroll.calculate') }}" method="POST" class="p-3 border rounded">
+                    @csrf
+                    <div class="form-group">
+                        <label for="user_id">Chọn nhân viên:</label>
+                        <select name="user_id" id="user_id" class="form-control">
+                            <option value="">-- Chọn nhân viên --</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3 w-100">Tính Lương</button>
+                </form>
             </div>
         </div>
+    </div>
+
+
+            </div>
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>© {{ date('Y') }} Your Company. All Rights Reserved.</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
     </div>
     <!-- Bootstrap core JavaScript-->
     <script src="fe-access/vendor/jquery/jquery.min.js"></script>
     <script src="fe-access/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="fe-access/vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script src="fe-access/js/sb-admin-2.min.js"></script>
+
 </body>
 
 </html>

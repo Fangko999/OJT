@@ -245,9 +245,16 @@
 
                 <!-- Nav Item - Tính lương -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('payrolls.index') }}">
+                    <a class="nav-link" href="{{ route('payroll.form') }}">
                         <i class="fas fa-money-check-alt"></i>
                         <span>Tính lương </span></a>
+                </li>
+
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('payrolls.index') }}">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>Xem bảng lương </span></a>
                 </li>
             </div>
             

@@ -97,20 +97,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/reject-attendance/{id}', [User_attendanceController::class, 'rejectAttendance'])->name('admin.rejectAttendance');
 });
 
-// Route::get('/users/export', function () {
-//     dd('Export route is called'); // Kiểm tra xem route có được gọi hay không
-//     return Excel::download(new UsersExport, 'users.xlsx');
-// });
-
-// Route::middleware('auth')->group(function () {
-//    Route::get('/salary-levels', [SalaryLevelController::class, 'index'])->name('salary_levels.index');
-//    Route::get('/salary-levels/create', [SalaryLevelController::class, 'create'])->name('salary_levels.create');
-//    Route::post('/salary-levels', [SalaryLevelController::class, 'store'])->name('salary_levels.store');
-//    Route::get('/salary-levels/{id}', [SalaryLevelController::class, 'show'])->name('salary_levels.show');
-//    Route::get('/salary-levels/{id}/edit', [SalaryLevelController::class, 'edit'])->name('salary_levels.edit');
-//    Route::put('/salary-levels/{id}', [SalaryLevelController::class, 'update'])->name('salary_levels.update');
-//    Route::delete('/salary-levels/{id}', [SalaryLevelController::class, 'destroy'])->name('salary_levels.destroy');
-// });
 Route::middleware('auth')->group(function () {
     Route::get('/salaryLevels', [SalaryLevelController::class, 'index'])->name('salaryLevels');
 
@@ -121,6 +107,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/salaryLevels/{id}', [SalaryLevelController::class, 'update'])->name('salaryLevels.update');
 
     Route::delete('/salaryLevels/soft-delete', [SalaryLevelController::class, 'softDeleteMultiple'])->name('salaryLevels.softDeleteMultiple');
+    
     Route::get('/payroll/calculate', [PayrollController::class, 'showPayrollForm'])->name('payroll.form');
     Route::post('/payroll/calculate', [PayrollController::class, 'calculatePayroll'])->name('payroll.calculate');
     Route::post('/payroll/store', [PayrollController::class, 'storePayroll'])->name('payroll.store');

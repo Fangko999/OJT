@@ -12,8 +12,9 @@ class PayrollController extends Controller
 {
     public function showPayrollForm()
     {
-        $users = User::where('is_active', 1)
-            ->where('role', '!=', 'admin')
+        $users = User::where('status', 1)
+            ->where('role', '!=', '1')
+            ->where('salary_level_id', '!=', null)
             ->get();
         return view('fe_payroll/payroll', compact('users'));
     }
@@ -40,15 +41,17 @@ class PayrollController extends Controller
             ->get();
 
 
-        $validDays = $attendances->whereIn('status', [1, 5])->count();
-        $invalidDays = $attendances->where('status', 0)->count();
-
-
-        $deductionPercentage = $attendances->where('status', 5)->count() * 0.1;
-        $effectiveValidDays = $validDays - $deductionPercentage;
-
-
-        $salaryReceived = (($monthlySalary * $salaryCoefficient) / 23) * $effectiveValidDays;
+            $validDays = $attendances->where('status', 1)->count();
+            $invalidDays = $attendances->whereIn('status', [0, 2, 3])->count();
+            
+            // Tính lương cho ngày hợp lệ
+            $validSalary = (($monthlySalary * $salaryCoefficient) / 23) * $validDays;
+            
+            // Trừ 50% lương cho ngày không hợp lệ
+            $invalidSalaryPenalty = (($monthlySalary * $salaryCoefficient) / 23) * $invalidDays * 0.5;
+            
+            // Tính lương cuối cùng
+            $salaryReceived = $validSalary + $invalidSalaryPenalty;
 
 
         return view('fe_payroll/calculate_payroll', compact('user', 'validDays', 'invalidDays', 'salaryCoefficient', 'salaryReceived'));
@@ -85,27 +88,28 @@ class PayrollController extends Controller
                 'valid_days' => $request->valid_days,
                 'invalid_days' => $request->invalid_days,
                 'salary_coefficient' => $request->salary_coefficient,
+                'month' => now(),
             ]);
         }
 
         // Lấy thông tin nhân viên để gửi email
-        $user = User::find($request->user_id);
-        $day = now()->format('d/m/Y');
-        // dd($user);
-        // Gửi email thông báo cho nhân viên
-        Mail::send('emails.salary_notification', [
-            'day' => $day,
-            'user' => $user->name,
-            'salary_received' => $request->salary_received,
-            'valid_days' => $request->valid_days,
-            'invalid_days' => $request->invalid_days,
-            'salary_coefficient' => $request->salary_coefficient,
-        ], function ($email) use ($user) {
-            $email->subject('Thông báo lương tháng ' . now()->format('m/Y'));
-            $email->to($user->email, $user->name);
-        });
+        // $user = User::find($request->user_id);
+        // $day = now()->format('d/m/Y');
+        // // dd($user);
+        // // Gửi email thông báo cho nhân viên
+        // Mail::send('emails.salary_notification', [
+        //     'day' => $day,
+        //     'user' => $user->name,
+        //     'salary_received' => $request->salary_received,
+        //     'valid_days' => $request->valid_days,
+        //     'invalid_days' => $request->invalid_days,
+        //     'salary_coefficient' => $request->salary_coefficient,
+        // ], function ($email) use ($user) {
+        //     $email->subject('Thông báo lương tháng ' . now()->format('m/Y'));
+        //     $email->to($user->email, $user->name);
+        // });
 
-        return redirect()->route('payroll.calculate')->with('success', 'Lương đã được lưu thành công và thông báo đã được gửi.');
+        return redirect()->route('payroll.calculate')->with('success', 'Lương đã được lưu thành công.');
     }
 
     public function showPayrolls(Request $request)
@@ -120,7 +124,7 @@ class PayrollController extends Controller
                     $q->where('name', 'like', '%' . $search . '%'); // Tìm kiếm theo tên nhân viên
                 });
             })
-            ->paginate(10);
+            ->paginate(5);
 
         return view('fe_payroll/user_payroll', compact('payrolls', 'search'));
     }

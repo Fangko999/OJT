@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Carbon\Carbon;
-use App\Mail\EmailReminder;
+use App\Mail\EmailCheckinReminder;
 use App\Mail\EmailCheckoutReminder;
 use App\Models\User;
 use Illuminate\Console\Command;

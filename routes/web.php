@@ -111,6 +111,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/payroll/calculate', [PayrollController::class, 'showPayrollForm'])->name('payroll.form');
     Route::post('/payroll/calculate', [PayrollController::class, 'calculatePayroll'])->name('payroll.calculate');
     Route::post('/payroll/store', [PayrollController::class, 'storePayroll'])->name('payroll.store');
-
     Route::get('/payrolls', [PayrollController::class, 'showPayrolls'])->name('payrolls.index');
 });

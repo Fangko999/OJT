@@ -29,13 +29,13 @@ class User extends Authenticatable
         'department_id',
         'salary_level_id',
         'role',
-        'reminder_time',
         'remind_checkin',
         'remind_checkout',
         'created_at',
         'created_by',
         'updated_at',
         'updated_by',
+        'gender',
     ];
 
     /**

@@ -112,4 +112,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/payroll/calculate', [PayrollController::class, 'calculatePayroll'])->name('payroll.calculate');
     Route::post('/payroll/store', [PayrollController::class, 'storePayroll'])->name('payroll.store');
     Route::get('/payrolls', [PayrollController::class, 'showPayrolls'])->name('payrolls.index');
+    Route::get('/run-payroll-calculate', function () {
+        $exitCode = Artisan::call('payroll:calculate', ['--testTime' => '23:00:00']);
+        return redirect()->back()->with('success', 'Tính lương cho tất cả nhân viên thành công!');
+    })->name('calculateAll.payroll');
 });

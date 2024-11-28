@@ -16,6 +16,7 @@ class Payroll extends Model
         'salary_coefficient',
         'processed_by',
         'processed_at',
+        'name_salary',
     ];
 
     // Quan hệ với User

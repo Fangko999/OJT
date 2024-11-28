@@ -179,6 +179,18 @@
             box-shadow: inset 4px 0 0 0 #007bff;
             /* Đường viền bên trái */
         }
+
+        .sidebar.toggled .nav-item .nav-link span {
+            display: none;
+        }
+
+        .sidebar.toggled .sidebar-brand-text {
+            display: none;
+        }
+
+        .sidebar.toggled .sidebar-brand-icon {
+            font-size: 1.5rem;
+        }
     </style>
 </head>
 
@@ -188,8 +200,9 @@
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center">
                 <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-user-tie"></i> <!-- Changed icon here -->
                 </div>
                 <div class="sidebar-brand-text mx-3">Quản lý nhân viên</div>
             </a>
@@ -202,7 +215,7 @@
                 <!-- Nav Item - Phòng ban -->
                 <li class="nav-item {{ request()->is('departments*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('departments') }}">
-                        <i class="fas fa-sitemap"></i>
+                        <i class="fas fa-sitemap {{ request()->is('departments*') ? 'text-primary' : '' }}"></i>
                         <span>Phòng ban</span>
                     </a>
                 </li>
@@ -210,51 +223,51 @@
                 <!-- Nav Item - Nhân viên -->
                 <li class="nav-item {{ request()->is('users*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('users') }}">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-users {{ request()->is('users*') ? 'text-primary' : '' }}"></i>
                         <span>Nhân viên</span>
                     </a>
                 </li>
 
                 <!-- Nav Item - Quản lý chấm công -->
-                <li class="nav-item">
+                <li class="nav-item {{ request()->is('attendance/department-report*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('department.report') }}">
-                        <i class="fas fa-file-alt"></i>
+                        <i class="fas fa-file-alt {{ request()->is('department.report*') ? 'text-primary' : '' }}"></i>
                         <span>Báo cáo chấm công</span>
                     </a>
                 </li>
 
-                <li class="nav-item">
+                <li class="nav-item {{ request()->is('admin/manage-attendances*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.manageAttendances') }}">
-                        <i class="fas fa-clipboard-check"></i>
+                        <i class="fas fa-clipboard-check {{ request()->is('admin.manageAttendances*') ? 'text-primary' : '' }}"></i>
                         <span>Xem giải trình</span>
                     </a>
                 </li>
 
-                <li class="nav-item">
+                <li class="nav-item {{ request()->is('setting/edit*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('setting.edit') }}">
-                        <i class="fas fa-cogs"></i>
+                        <i class="fas fa-cogs {{ request()->is('setting.edit*') ? 'text-primary' : '' }}"></i>
                         <span>Thời gian chấm công</span>
                     </a>
                 </li>
                 <!-- Nav Item - Quản lý bậc lương -->
-                <li class="nav-item">
+                <li class="nav-item {{ request()->is('salaryLevels*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('salaryLevels') }}">
-                        <i class="fas fa-money-check-alt"></i>
-                        <span>Quản lý bậc lương </span></a>
+                        <i class="fas fa-money-check-alt {{ request()->is('salaryLevels*') ? 'text-primary' : '' }}"></i>
+                        <span>Quản lý bậc lương</span></a>
                 </li>
 
                 <!-- Nav Item - Tính lương -->
-                <li class="nav-item">
+                <li class="nav-item {{ request()->is('payroll/calculate*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('payroll.form') }}">
-                        <i class="fas fa-money-check-alt"></i>
-                        <span>Tính lương </span></a>
+                        <i class="fas fa-money-check-alt {{ request()->is('payroll.form*') ? 'text-primary' : '' }}"></i>
+                        <span>Tính lương</span></a>
                 </li>
 
 
-                <li class="nav-item">
+                <li class="nav-item {{ request()->is('payrolls*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('payrolls.index') }}">
-                        <i class="fas fa-money-check-alt"></i>
-                        <span>Xem bảng lương </span></a>
+                        <i class="fas fa-money-check-alt {{ request()->is('payrolls.index*') ? 'text-primary' : '' }}"></i>
+                        <span>Xem bảng lương</span></a>
                 </li>
             </div>
             
@@ -292,6 +305,13 @@
 
     <!-- Custom scripts for all pages-->
     <script src="fe-access/js/sb-admin-2.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('sidebarToggle').addEventListener('click', function() {
+                document.getElementById('accordionSidebar').classList.toggle('toggled');
+            });
+        });
+    </script>
 </body>
 
 </html>

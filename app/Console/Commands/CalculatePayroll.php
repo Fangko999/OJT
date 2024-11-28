@@ -9,6 +9,7 @@ use Carbon\CarbonPeriod;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class CalculatePayroll extends Command
 {
@@ -23,7 +24,7 @@ class CalculatePayroll extends Command
     public function handle()
     {
         // Cố định thời gian tính lương là 23:00 hàng ngày
-        $payTime = Carbon::createFromTime(22, 30, 0);  // 23:00:00
+        $payTime = Carbon::createFromTime(23, 0, 0);  // 23:00:00
 
         // Kiểm tra nếu có tham số 'testTime' thì sử dụng thời gian test, nếu không thì dùng thời gian hiện tại
         $testTime = $this->option('testTime');
@@ -68,6 +69,7 @@ class CalculatePayroll extends Command
         foreach ($users as $user) {
             $salaryCoefficient = $user->salaryLevel->salary_coefficient ?? 1;
             $monthlySalary = $user->salaryLevel->monthly_salary ?? 0;
+            $nameSalary = $user->salaryLevel->level_name ?? 'Chưa có bậc lương';
 
             $attendances = DB::table('user_attendance')
                 ->where('user_id', $user->id)
@@ -102,6 +104,7 @@ class CalculatePayroll extends Command
                 $existingPayroll->valid_days = $validDays;
                 $existingPayroll->invalid_days = $invalidDays;
                 $existingPayroll->salary_coefficient = $salaryCoefficient;
+                $existingPayroll->name_salary = $nameSalary;
                 $existingPayroll->save();
             } else {
                 // Tạo mới bảng lương nếu chưa có
@@ -111,9 +114,24 @@ class CalculatePayroll extends Command
                     'valid_days' => $validDays,
                     'invalid_days' => $invalidDays,
                     'salary_coefficient' => $salaryCoefficient,
+                    'name_salary' => $nameSalary,
                     'month' => now(),
                 ]);
             }
+
+            // Gửi email thông báo cho nhân viên
+            Mail::send('fe_email.salary_notification', [
+                'day' => now()->format('d/m/Y'),
+                'user' => $user->name,
+                'salary_received' => $salaryReceived,
+                'valid_days' => $validDays,
+                'invalid_days' => $invalidDays,
+                'salary_coefficient' => $salaryCoefficient,
+                'name_salary' => $nameSalary,
+            ], function ($email) use ($user) {
+                $email->subject('Thông báo lương tháng ' . now()->format('m/Y'));
+                $email->to($user->email, $user->name);
+            });
         }
 
         $this->info('Lương của tất cả nhân viên đã được tính toán.');

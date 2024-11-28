@@ -58,7 +58,7 @@
             <h1>Nhắc nhở Check In</h1>
         </div>
         <div class="email-content">
-            <p>Chào <strong>[{{ $user->name }}]</strong>,</p>
+            <p>Chào <strong>{{ $user->name }}</strong>,</p>
             <p>Đây là email nhắc nhở bạn thực hiện check in. Vui lòng click vào liên kết bên dưới để hoàn thành check in:</p>
             <p><a href="http://localhost/EMS%202/login" class="button">Check In Ngay</a></p>
             <p>Cảm ơn bạn!</p>

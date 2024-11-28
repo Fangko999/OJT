@@ -62,7 +62,7 @@
                     <thead>
                         <tr>
                             <th class="text-center">Tên nhân viên</th>
-                            <th class="text-center">Hệ số lương</th>
+                            <th class="text-center" style="width: 150px;">Tên bậc lương</th>
                             <th class="text-center" style="width: 150px;">Số ngày công hợp lệ</th>
                             <th class="text-center" style="width: 150px;">Số ngày công không hợp lệ</th>
                             <th class="text-center" style="width: 200px;">Lương nhận được</th>
@@ -73,7 +73,7 @@
                         @foreach ($payrolls as $payroll)
                             <tr>
                                 <td class="text-center">{{ $payroll->user->name }}</td>
-                                <td class="text-center">{{ $payroll->salary_coefficient }}</td>
+                                <td class="text-center">{{ $payroll->name_salary }}</td>
                                 <td class="text-center">{{ $payroll->valid_days }}</td>
                                 <td class="text-center">{{ $payroll->invalid_days }}</td>
                                 <td class="text-center">{{ number_format($payroll->salary_received, 0) }} VND</td>

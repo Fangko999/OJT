@@ -34,6 +34,10 @@
                                     <td>{{ $user->name }}</td>
                                 </tr>
                                 <tr>
+                                    <th>Tên bậc lương</th>
+                                    <td>{{ $nameSalary }}</td>
+                                </tr>
+                                <tr>
                                     <th>Hệ số lương</th>
                                     <td>{{ $salaryCoefficient }}</td>
                                 </tr>
@@ -66,6 +70,7 @@
                                 <input type="hidden" name="salary_received" value="{{ $salaryReceived }}">
                                 <input type="hidden" name="valid_days" value="{{ $validDays }}">
                                 <input type="hidden" name="invalid_days" value="{{ $invalidDays }}">
+                                <input type="hidden" name="name_salary" value="{{ $nameSalary }}">
                                 <input type="hidden" name="salary_coefficient" value="{{ $salaryCoefficient }}">
                             </form>
                         </div>

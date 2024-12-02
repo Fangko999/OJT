@@ -142,7 +142,7 @@
                             <i class="fas fa-plus"></i> Thêm bậc lương
                         </a>
                         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmDeleteModal">
-                            <i class="fas fa-trash-alt"></i> Xóa mục đã chọn
+                            <i class="fas fa-trash-alt"></i> Xóa các mục đã chọn
                         </button>
                     </div>
                 </div>

@@ -84,6 +84,18 @@
             background-color: #6c757d;
             border-color: #5a6268;
         }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #000000; /* Change text color to black */
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #000000; /* Change text color to black */
+            border-color: #f5c6cb;
+        }
     </style>
 </head>
 
@@ -106,6 +118,12 @@
                             @if(session('message'))
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 {{ session('message') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            @endif
+                            @if(session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ session('error') }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             @endif

@@ -118,9 +118,9 @@
                                 <form action="{{ route('payroll.calculate') }}" method="POST">
                                     @csrf
                                     <div class="form-group">
-                                        <label for="user_id">Chọn nhân viên:</label>
+                                    
                                         <select name="user_id" id="user_id" class="form-control">
-                                            <option value="">-- Chọn nhân viên --</option>
+                                            <option value="">--Chọn nhân viên--</option>
                                             @foreach ($users as $user)
                                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
                                             @endforeach

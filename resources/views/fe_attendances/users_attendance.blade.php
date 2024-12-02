@@ -210,7 +210,7 @@
                                     @elseif ($attendance->status == 1)
                                     <span class="badge badge-success">Hợp lệ</span>
                                     @elseif ($attendance->status == 2)
-                                    <span class="badge badge-warning">Đang chờ giải trình</span>
+                                    <span class="badge badge-warning">Đang chờ xem xét</span>
                                     @elseif ($attendance->status == 3)
                                     <span class="badge badge-danger">Đã từ chối</span>
                                     @endif

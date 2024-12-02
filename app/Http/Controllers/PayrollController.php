@@ -108,7 +108,6 @@ class PayrollController extends Controller
         // Lấy thông tin nhân viên để gửi email
         $user = User::find($request->user_id);
         $day = now()->format('d/m/Y');
-        // dd($user);
         // Gửi email thông báo cho nhân viên
         Mail::send('fe_email.salary_notification', [
             'day' => $day,

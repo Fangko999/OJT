@@ -32,7 +32,7 @@ public function __construct(User $user)
     public function content(): Content
     {
         return new Content(
-            view: 'fe_email.email_reminder',
+            view: 'fe_email.checkin_reminder',
             with: [
                 'user' => $this->user,
                 

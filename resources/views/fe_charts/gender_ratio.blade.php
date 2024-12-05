@@ -33,10 +33,32 @@
             width: 100%;
             /* Chiều rộng tự động điều chỉnh */
         }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            margin-top: 10px;
+        }
+
+        .chart-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .employee-stats {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
     </style>
 </head>
 
-<body id="page-top">
+<body id="page-top"></body>
     <div id="wrapper">
         @include('fe_admin.slidebar')
         <div id="content-wrapper" class="d-flex flex-column">
@@ -66,14 +88,12 @@
                             </form>
                         </div>
                         <div class="col-md-8">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="chart-container mt-4">
-                                        <canvas id="genderRatioChart"></canvas>
-                                        <div id="noDataMessage" class="no-data-message" style="display: none;">Phòng ban này không có nhân viên nào!</div>
-                                    </div>
+                            <div class="chart-section">
+                                <div class="chart-container mt-4">
+                                    <canvas id="genderRatioChart"></canvas>
+                                    <div id="noDataMessage" class="no-data-message" style="display: none;">Phòng ban này không có nhân viên nào!</div>
                                 </div>
-                                <div class="col-md-6" id="employeeStats" style="display: none; margin-top: 20px;">
+                                <div class="employee-stats" id="employeeStats" style="display: none;">
                                     <p>Tổng số nhân viên: <span id="totalEmployees"></span></p>
                                     <p>Số lượng Nam: <span id="maleEmployees"></span></p>
                                     <p>Số lượng Nữ: <span id="femaleEmployees"></span></p>

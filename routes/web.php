@@ -10,7 +10,7 @@ use App\Http\Controllers\SalaryLevelController;
 use App\Http\Controllers\PayrollController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use App\http\Controllers\ChartController;
+use App\Http\Controllers\ChartController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,4 +116,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/employee-ratio', [ChartController::class, 'employeeRatioView'])->name('employee.ratio');
     Route::get('/api/gender-ratio-by-department/{departmentId}', [ChartController::class, 'getGenderRatioByDepartment']);
     Route::get('/gender-ratio', [ChartController::class, 'genderRatioView'])->name('gender.ratio');
+    Route::get('/api/attendance-ratio', [ChartController::class, 'getAttendanceRatio'])->name('getAttendanceRatio');
+    Route::get('/attendance-ratio', [ChartController::class, 'attendanceRatioView'])->name('attendance.ratio.view');
+    Route::get('/age-ratio', [ChartController::class, 'ageRatioView'])->name('age.ratio');
+    Route::get('/api/age-ratio-by-department/{departmentId}', [ChartController::class, 'getAgeRatioByDepartment']);
 });

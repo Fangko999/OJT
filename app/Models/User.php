@@ -37,6 +37,7 @@ class User extends Authenticatable
         'updated_at',
         'updated_by',
         'gender',
+        'date_of_birth',
     ];
 
     /**

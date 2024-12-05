@@ -25,6 +25,11 @@
                 @include('fe_admin.topbar')
 
                 <div class="container pt-5 mb-5">
+                    @if(session('success'))
+                        <div class="alert alert-success" style="background-color: #d4edda; color: #155724; font-weight: bold;">
+                            {{ session('success') }}
+                        </div>
+                    @endif
                     <div class="row">
                         <div class="col-md-9">
                             <h2 class="font-weight-bold">Kết Quả Tính Lương</h2>

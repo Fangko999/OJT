@@ -65,73 +65,25 @@ class CalculatePayroll extends Command
             return;
         }
 
+        $payrollController = new \App\Http\Controllers\PayrollController();
+
         // Duyệt qua từng nhân viên và tính lương
         foreach ($users as $user) {
-            $salaryCoefficient = $user->salaryLevel->salary_coefficient ?? 1;
-            $monthlySalary = $user->salaryLevel->monthly_salary ?? 0;
-            $nameSalary = $user->salaryLevel->level_name ?? 'Chưa có bậc lương';
-
-            $attendances = DB::table('user_attendance')
-                ->where('user_id', $user->id)
-                ->where('type', 'out')
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->get();
-
-            $validDays = $attendances->where('status', 1)->count();
-            $invalidDays = $attendances->whereIn('status', [0, 2, 3])->count();
-
-            // Tính lương cho ngày hợp lệ
-            $validSalary = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $validDays;
-
-            // Trừ 50% lương cho ngày không hợp lệ
-            $invalidSalaryPenalty = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $invalidDays * 0.5;
-
-            // Tính lương cuối cùng
-            $salaryReceived = $validSalary + $invalidSalaryPenalty;
+            list($validDays, $invalidDays, $nameSalary, $salaryReceived, $salaryCoefficient) = $payrollController->calculateSalary($user);
 
             Log::info("Tính lương cho nhân viên: {$user->name}, Lương nhận được: {$salaryReceived}, Ngày hợp lệ: {$validDays}, Ngày không hợp lệ: {$invalidDays}, Hệ số lương: {$salaryCoefficient}");
 
-            // Kiểm tra xem nhân viên đã có bảng lương trong tháng này chưa
-            $existingPayroll = Payroll::where('user_id', $user->id)
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->first();
-
-            if ($existingPayroll) {
-                // Cập nhật bảng lương nếu đã có
-                $existingPayroll->salary_received = $salaryReceived;
-                $existingPayroll->valid_days = $validDays;
-                $existingPayroll->invalid_days = $invalidDays;
-                $existingPayroll->salary_coefficient = $salaryCoefficient;
-                $existingPayroll->name_salary = $nameSalary;
-                $existingPayroll->save();
-            } else {
-                // Tạo mới bảng lương nếu chưa có
-                Payroll::create([
-                    'user_id' => $user->id,
-                    'salary_received' => $salaryReceived,
-                    'valid_days' => $validDays,
-                    'invalid_days' => $invalidDays,
-                    'salary_coefficient' => $salaryCoefficient,
-                    'name_salary' => $nameSalary,
-                    'month' => now(),
-                ]);
-            }
-
-            // Gửi email thông báo cho nhân viên
-            Mail::send('fe_email.salary_notification', [
-                'day' => now()->format('d/m/Y'),
-                'user' => $user->name,
+            // Tạo request giả để gọi hàm storePayroll
+            $request = new \Illuminate\Http\Request([
+                'user_id' => $user->id,
                 'salary_received' => $salaryReceived,
                 'valid_days' => $validDays,
                 'invalid_days' => $invalidDays,
                 'salary_coefficient' => $salaryCoefficient,
                 'name_salary' => $nameSalary,
-            ], function ($email) use ($user) {
-                $email->subject('Thông báo lương tháng ' . now()->format('m/Y'));
-                $email->to($user->email, $user->name);
-            });
+            ]);
+
+            $payrollController->storePayroll($request);
         }
 
         $this->info('Lương của tất cả nhân viên đã được tính toán.');

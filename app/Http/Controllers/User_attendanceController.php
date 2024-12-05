@@ -38,6 +38,17 @@ class User_attendanceController extends Controller
     public function checkIn(Request $request)
     {
         $user = Auth::user();
+        $today = Carbon::today()->toDateString();
+
+        // Check if the user has already checked in today
+        $todayCheckIn = User_attendance::where('user_id', $user->id)
+            ->whereDate('time', $today)
+            ->where('type', 'in')
+            ->first();
+
+        if ($todayCheckIn) {
+            return redirect()->back()->with('error', 'Bạn đã check in hôm nay!');
+        }
 
         // Lấy bản ghi check in mới nhất
         $latestAttendance = User_attendance::where('user_id', $user->id)
@@ -58,7 +69,7 @@ class User_attendanceController extends Controller
 
             // Nếu có bản ghi check in nhưng chưa có lý do giải trình, yêu cầu người dùng giải trình lý do
             if ($yesterdayAttendance) {
-                return redirect()->back()->with('message', 'Bạn chưa checkout hôm qua, vui lòng giải trình lý do.')->withInput();
+                return redirect()->back()->with('message', 'Bạn chưa checkout hôm qua, vui lòng giải trình lý do.');
             }
 
             // Nếu không có vấn đề gì, thực hiện check-in
@@ -80,7 +91,7 @@ class User_attendanceController extends Controller
 
             // Nếu không hợp lệ và chưa có lý do giải trình, yêu cầu nhập lý do
             if (!$validStatus && !$request->input('justification')) {
-                return redirect()->back()->with('warning', 'Check in không hợp lệ, vui lòng giải trình lý do.')->withInput();
+                return redirect()->back()->with('warning', 'Check in không hợp lệ, vui lòng giải trình lý do.');
             }
 
             return redirect()->back()->with('message', 'Check in thành công.');
@@ -94,6 +105,18 @@ class User_attendanceController extends Controller
     public function checkOut(Request $request)
     {
         $user = Auth::user();
+        $today = Carbon::today()->toDateString();
+
+        // Check if the user has already checked out today
+        $todayCheckOut = User_attendance::where('user_id', $user->id)
+            ->whereDate('time', $today)
+            ->where('type', 'out')
+            ->first();
+
+        if ($todayCheckOut) {
+            return redirect()->back()->with('error', 'Bạn đã check out hôm nay!');
+        }
+
         $latestAttendance = User_attendance::where('user_id', $user->id)
             ->orderBy('time', 'desc')
             ->first();
@@ -118,7 +141,7 @@ class User_attendanceController extends Controller
 
             // Nếu không hợp lệ và chưa có lý do giải trình, yêu cầu nhập lý do
             if (!$validStatus && !$request->input('justification')) {
-                return redirect()->back()->with('warning', 'Check Out không hợp lệ, vui lòng giải trình lý do.')->withInput();
+                return redirect()->back()->with('warning', 'Check Out không hợp lệ, vui lòng giải trình lý do.');
             }
 
             // Thông báo cho người dùng về thời gian check-out
@@ -157,10 +180,10 @@ class User_attendanceController extends Controller
                 $email->subject('Đơn giải trình của bạn đã được chấp nhận!');
                 $email->to($user->email, $user->name);
             });
-            return redirect()->back()->with('message', 'Đã chấp nhận lý do giải trình!')->with('alert-class', 'alert-success');
+            return redirect()->back()->with('message', 'Đã chấp nhận lý do giải trình!');
         }
 
-        return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.')->with('alert-class', 'alert-danger');
+        return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.');
     }
 
     public function rejectAttendance($id)
@@ -177,10 +200,10 @@ class User_attendanceController extends Controller
                 $email->subject('Đơn giải trình của bạn đã bị từ chối');
                 $email->to($user->email, $user->name);
             });
-            return redirect()->back()->with('message', 'Đã từ chối lý do giải trình!')->with('alert-class', 'alert-danger');
+            return redirect()->back()->with('message', 'Đã từ chối lý do giải trình!');
         }
 
-        return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.')->with('alert-class', 'alert-danger');
+        return redirect()->back()->with('error', 'Không thể thay đổi trạng thái.');
     }
 
     public function manageInvalidAttendances()

@@ -77,6 +77,6 @@ class SalaryLevelController extends Controller
 
         SalaryLevel::whereIn('id', $ids)->update(['is_active' => 0]);
 
-        return redirect()->route('salaryLevels')->with('success', 'Các bậc lương đã được xóa mềm thành công.');
+        return redirect()->route('salaryLevels')->with('success', 'Các bậc lương đã được xóa thành công.');
     }
 }

@@ -22,49 +22,56 @@ class PayrollController extends Controller
 
     public function calculatePayroll(Request $request)
     {
-
         $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
 
+        $user = User::with('salaryLevel')->findOrFail($request->user_id);
+
+        list($validDays, $invalidDays, $nameSalary, $salaryReceived, $salaryCoefficient) = $this->calculateSalary($user);
+
+        return view('fe_payroll/calculate_payroll', compact('user', 'validDays', 'invalidDays', 'nameSalary', 'salaryReceived', 'salaryCoefficient'));
+    }
+
+    public function calculateSalary($user)
+    {
         $monthStart = now()->startOfMonth();
         $monthEnd = now()->endOfMonth();
 
         $workDays = CarbonPeriod::create($monthStart, $monthEnd)
             ->filter(function ($date) {
-
                 return !$date->isWeekend();
             });
 
         $totalWorkDays = $workDays->count();
 
-        $user = User::with('salaryLevel')->findOrFail($request->user_id);
+        $salaryCoefficient = $user->salaryLevel->salary_coefficient ?? 0;
+        $monthlySalary = $user->salaryLevel->monthly_salary ?? 0;
+        $nameSalary = $user->salaryLevel->level_name ?? 'Chưa có bậc lương';
 
-        $salaryCoefficient = $user->salaryLevel->salary_coefficient ?? 1;
-            $monthlySalary = $user->salaryLevel->monthly_salary ?? 0;
-            $nameSalary = $user->salaryLevel->level_name ?? 'Chưa có bậc lương';
+        $attendances = DB::table('user_attendance')
+            ->where('user_id', $user->id)
+            ->whereMonth('time', now()->month)
+            ->whereYear('time', now()->year)
+            ->get()
+            ->groupBy(function ($attendance) {
+                return \Carbon\Carbon::parse($attendance->time)->toDateString();
+            });
 
-            $attendances = DB::table('user_attendance')
-                ->where('user_id', $user->id)
-                ->where('type', 'out')
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->get();
+        $validDays = $attendances->filter(function ($attendanceGroup) use ($user) {
+            $inStatus = $attendanceGroup->where('type', 'in')->first()->status ?? null;
+            $outStatus = $attendanceGroup->where('type', 'out')->first()->status ?? null;
 
-            $validDays = $attendances->where('status', 1)->count();
-            $invalidDays = $attendances->whereIn('status', [0, 2, 3])->count();
+            return $inStatus == 1 && $outStatus == 1;
+        })->count();
 
-            // Tính lương cho ngày hợp lệ
-            $validSalary = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $validDays;
+        $invalidDays = $attendances->count() - $validDays;
 
-            // Trừ 50% lương cho ngày không hợp lệ
-            $invalidSalaryPenalty = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $invalidDays * 0.5;
+        $validSalary = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $validDays;
+        $invalidSalaryPenalty = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $invalidDays * 0.5;
+        $salaryReceived = $validSalary + $invalidSalaryPenalty;
 
-            // Tính lương cuối cùng
-            $salaryReceived = $validSalary + $invalidSalaryPenalty;
-
-
-        return view('fe_payroll/calculate_payroll', compact('user', 'validDays', 'invalidDays', 'nameSalary', 'salaryReceived', 'salaryCoefficient'));
+        return [$validDays, $invalidDays, $nameSalary, $salaryReceived, $salaryCoefficient];
     }
 
     public function storePayroll(Request $request)
@@ -105,24 +112,28 @@ class PayrollController extends Controller
             ]);
         }
 
-        // Lấy thông tin nhân viên để gửi email
-        $user = User::find($request->user_id);
-        $day = now()->format('d/m/Y');
         // Gửi email thông báo cho nhân viên
+        $user = User::find($request->user_id);
+        $this->sendSalaryNotification($user, $request->salary_received, $request->valid_days, $request->invalid_days, $request->salary_coefficient, $request->name_salary);
+
+        return redirect()->route('payroll.calculate')->with('success', 'Bảng lương đã được lưu thành công.');
+    }
+
+    private function sendSalaryNotification($user, $salaryReceived, $validDays, $invalidDays, $salaryCoefficient, $nameSalary)
+    {
+        $day = now()->format('d/m/Y');
         Mail::send('fe_email.salary_notification', [
             'day' => $day,
             'user' => $user->name,
-            'salary_received' => $request->salary_received,
-            'valid_days' => $request->valid_days,
-            'invalid_days' => $request->invalid_days,
-            'salary_coefficient' => $request->salary_coefficient,
-            'name_salary' => $request->name_salary,
+            'salary_received' => $salaryReceived,
+            'valid_days' => $validDays,
+            'invalid_days' => $invalidDays,
+            'salary_coefficient' => $salaryCoefficient,
+            'name_salary' => $nameSalary,
         ], function ($email) use ($user) {
             $email->subject('Thông báo lương tháng ' . now()->format('m/Y'));
             $email->to($user->email, $user->name);
         });
-
-        return redirect()->route('payroll.calculate')->with('success', 'Bảng lương đã được lưu thành công.');
     }
 
     public function showPayrolls(Request $request)

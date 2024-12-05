@@ -158,15 +158,6 @@ class DepartmentController extends Controller
     // Trả về view với thông tin phòng ban và các tổ con
     return view('fe_department/sub_departments', compact('department'));
 }
-
-/*************  ✨ Codeium Command ⭐  *************/
-    /**
-     * Hiển thị chi tiết phòng ban và người dùng trong phòng ban.
-     *
-     * @param int $id ID của phòng ban
-     * @return \Illuminate\Http\Response
-     */
-/******  9c9fcda7-79d7-4339-b7a9-6b2b0cab570c  *******/
 public function show($id){
     $department = Department::with('users')->findOrFail($id);
     return view('fe_department/department', compact('department'));

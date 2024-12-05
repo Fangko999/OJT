@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Biểu đồ nhân sự</title>
+    <title>Biểu đồ thống kê</title>
 
     <!-- Font và CSS -->
     <link href="{{ asset('fe-access/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
@@ -18,6 +18,12 @@
             position: relative;
             height: 400px;
             width: 100%;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -32,11 +38,12 @@
 
                 <!-- Biểu đồ tỷ lệ nhân viên giữa các phòng ban -->
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Biểu đồ tỷ lệ nhân sự theo phòng ban</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Biểu đồ thống kê</h1>
                     <div class="card shadow mb-4">
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="employeeRatioChart"></canvas>
+                        <div class="card-body text-center">
+                            <div class="button-container">
+                                <a href="{{ route('employee.ratio') }}" class="btn btn-primary">Tỷ lệ nhân sự giữa các phòng ban</a>
+                                <a href="{{ route('gender.ratio') }}" class="btn btn-primary">Tỷ lệ giới tính theo từng phòng ban</a>
                             </div>
                         </div>
                     </div>
@@ -65,85 +72,6 @@
     <script src="{{ asset('fe-access/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('fe-access/js/sb-admin-2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', loadEmployeeRatioChart);
-
-        async function loadEmployeeRatioChart() {
-            try {
-                const response = await fetch('http://localhost/EMS%202/api/user-count-by-department');
-                const data = await response.json();
-
-                // Kiểm tra xem dữ liệu có đúng không
-                if (!data.labels || !data.counts || data.labels.length === 0) {
-                    document.querySelector('.chart-container').innerHTML = '<p class="text-center text-danger">Không có dữ liệu hoặc dữ liệu không hợp lệ.</p>';
-                    return;
-                }
-
-                // Kiểm tra dữ liệu của labels và counts có khớp không
-                if (data.labels.length !== data.counts.length) {
-                    document.querySelector('.chart-container').innerHTML = '<p class="text-center text-danger">Dữ liệu không khớp, vui lòng thử lại sau.</p>';
-                    return;
-                }
-
-                const ctx = document.getElementById('employeeRatioChart').getContext('2d');
-
-                // Create gradient
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
-                gradient.addColorStop(1, 'rgba(153, 102, 255, 0.6)');
-
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: 'Số lượng nhân sự',
-                            data: data.counts,
-                            backgroundColor: gradient,
-                            borderColor: '#4A5568',
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + context.raw;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Phòng ban',
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Số lượng nhân sự',
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Error fetching chart data:', error);
-                document.querySelector('.chart-container').innerHTML = '<p class="text-center text-danger">Không thể tải dữ liệu biểu đồ. Vui lòng thử lại sau.</p>';
-            }
-        }
-    </script>
 </body>
 
 </html>

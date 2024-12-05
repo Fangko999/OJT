@@ -272,8 +272,8 @@
 
                 <li class="nav-item {{ request()->is('chart*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('chart.view') }}">
-                        <i class="fas fa-money-check-alt {{ request()->is('chart.view*') ? 'text-primary' : '' }}"></i>
-                        <span>Bảng thống kê</span></a>
+                        <i class="fas fa-chart-pie {{ request()->is('chart.view*') ? 'text-primary' : '' }}"></i>
+                        <span>Xem thống kê</span></a>
                 </li>
 
             </div>

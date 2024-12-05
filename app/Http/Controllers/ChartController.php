@@ -14,6 +14,12 @@ class ChartController extends Controller
     {
         return view('fe_charts/charts');
     }
+
+    public function employeeRatioView()
+    {
+        return view('fe_charts.employee_ratio');
+    }
+
     public function getUserCountByDepartment()
     {
         $data = DB::table('users')
@@ -29,20 +35,25 @@ return response()->json([
 ]);
     }
 
-    public function getGenderCountByDepartment()
+    public function getGenderRatioByDepartment($departmentId)
     {
         $data = DB::table('users')
-            ->join('departments', 'users.department_id', '=', 'departments.id')
-            ->select('departments.name as department_name', 'users.gender', DB::raw('count(users.id) as gender_count'))
-            ->groupBy('departments.name', 'users.gender')
-            ->orderBy('departments.name', 'asc')
+            ->select(DB::raw('gender, count(id) as count'))
+            ->where('department_id', $departmentId)
+            ->groupBy('gender')
             ->get();
 
-        $result = [];
-        foreach ($data as $row) {
-            $result[$row->department_name][$row->gender] = $row->gender_count;
-        }
+        $genderRatio = [
+            'male' => $data->where('gender', 1)->first()->count ?? 0,
+            'female' => $data->where('gender', 0)->first()->count ?? 0,
+        ];
 
-        return response()->json($result);
+        return response()->json($genderRatio);
+    }
+
+    public function genderRatioView()
+    {
+        $departments = Department::all();
+        return view('fe_charts.gender_ratio', compact('departments'));
     }
 }

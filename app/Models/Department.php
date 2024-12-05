@@ -9,13 +9,12 @@ class Department extends Model
 {
     use HasFactory;
     protected $table = 'departments';
+    protected $primaryKey = 'id';
     protected $fillable = [
         'name',
         'parent_id',
-        'status',
-        
-        'created_by',
-        
+        'status',        
+        'created_by',        
         'updated_by',
     ];
     // Mối quan hệ với phòng ban cha
@@ -42,6 +41,6 @@ class Department extends Model
         return $this->hasMany(Department::class, 'parent_id')->with('children');
     }
     public function users(){
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'department_id');
     }
 }

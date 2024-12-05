@@ -4,19 +4,13 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\User_attendanceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\TestExcelController;
-use App\Exports\UsersExport;
-use App\Http\Controllers\Caculate_Salary;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Salary_caculate;
-use App\Http\Controllers\SalaryController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SalaryLevelController;
 use App\Http\Controllers\PayrollController;
-use App\Models\Salary;
-use App\Models\User;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use App\http\Controllers\ChartController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,4 +110,7 @@ Route::middleware('auth')->group(function () {
         $exitCode = Artisan::call('payroll:calculate', ['--testTime' => '23:00:00']);
         return redirect()->back()->with('success', 'Tính lương cho tất cả nhân viên thành công!');
     })->name('calculateAll.payroll');
+
+    Route::get('/chart', [ChartController::class, 'chartView'])->name('chart.view');
+    Route::get('/api/user-count-by-department', [ChartController::class, 'getUserCountByDepartment']);
 });

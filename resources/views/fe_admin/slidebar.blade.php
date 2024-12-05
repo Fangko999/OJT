@@ -269,6 +269,13 @@
                         <i class="fas fa-money-check-alt {{ request()->is('payrolls.index*') ? 'text-primary' : '' }}"></i>
                         <span>Xem bảng lương</span></a>
                 </li>
+
+                <li class="nav-item {{ request()->is('chart*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('chart.view') }}">
+                        <i class="fas fa-money-check-alt {{ request()->is('chart.view*') ? 'text-primary' : '' }}"></i>
+                        <span>Bảng thống kê</span></a>
+                </li>
+
             </div>
             
 
@@ -305,6 +312,8 @@
 
     <!-- Custom scripts for all pages-->
     <script src="fe-access/js/sb-admin-2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('sidebarToggle').addEventListener('click', function() {

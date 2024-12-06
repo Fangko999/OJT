@@ -53,9 +53,23 @@
                         <div class="form-group">
                             <label for="monthly_salary" class="form-label">Lương theo tháng (VND)</label>
                             <input type="text" class="form-control" id="monthly_salary" name="monthly_salary"
-                                value="{{ old('monthly_salary', $salaryLevel->monthly_salary) }}" oninput="formatMoney(this)" required>
+                                value="{{ old('monthly_salary', $salaryLevel->monthly_salary) }}" required>
                             <div class="invalid-feedback">
                                 Vui lòng nhập lương tháng.
+                            </div>
+                            @if ($errors->has('monthly_salary'))
+                                <div class="text-danger">
+                                    {{ $errors->first('monthly_salary') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="form-group">
+                            <label for="daily_salary" class="form-label">Lương theo ngày (VND)</label>
+                            <input type="text" class="form-control" id="daily_salary" name="daily_salary"
+                                value="{{ old('daily_salary', $salaryLevel->daily_salary) }}" required>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập lương ngày.
                             </div>
                         </div>
 
@@ -90,6 +104,37 @@
             }, false);
         })();
     </script>
+
+     <!-- Initialize Cleave.js -->
+     <script>
+            const cleaveMonthly = new Cleave('#monthly_salary', {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                numeralDecimalScale: 2,
+                noImmediatePrefix: true
+            });
+
+            const monthlyInput = document.getElementById('monthly_salary');
+
+            document.querySelector('form').addEventListener('submit', function(event) {
+                const cleanedSalary = monthlyInput.value.replace(/[^0-9.]/g, '');
+                monthlyInput.value = cleanedSalary;
+            });
+
+            const cleaveDaily = new Cleave('#daily_salary', {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                numeralDecimalScale: 2,
+                noImmediatePrefix: true
+            });
+
+            const dailyInput = document.getElementById('daily_salary');
+
+            document.querySelector('form').addEventListener('submit', function(event) {
+                const cleanedDailySalary = dailyInput.value.replace(/[^0-9.]/g, '');
+                dailyInput.value = cleanedDailySalary;
+            });
+        </script>
 </body>
 
 </html>

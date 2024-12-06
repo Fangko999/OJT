@@ -165,6 +165,7 @@
                                 <th>Tên Bậc Lương</th>
                                 <th>Hệ Số Lương</th>
                                 <th>Lương theo tháng</th>
+                                <th>Lương theo ngày</th>
                                 <th>Chỉnh sửa</th>
                             </tr>
                         </thead>
@@ -176,6 +177,7 @@
                                 <td>{{ $salaryLevel->level_name }}</td>
                                 <td>{{ $salaryLevel->salary_coefficient }}</td>
                                 <td>{{ number_format($salaryLevel->monthly_salary, 0, ',', '.') }} VND</td>
+                                <td>{{ number_format($salaryLevel->daily_salary, 0, ',', '.') }} VND</td>
                                 <td>
                                     <a href="{{ route('salaryLevels.edit', $salaryLevel->id) }}" class="btn btn-success">
                                         <i class="fas fa-edit"></i>

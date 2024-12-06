@@ -35,21 +35,31 @@
                         <div class="form-group row">
                             <label for="name" class="col-sm-2 col-form-label">Tên Bậc Lương</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="name" name="name" required>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label for="salary_coefficient" class="col-sm-2 col-form-label">Hệ Số Bậc Lương</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="salary_coefficient" name="salary_coefficient" step="any" required>
+                                <input type="number" class="form-control" id="salary_coefficient" name="salary_coefficient" step="any" value="{{ old('salary_coefficient') }}" required>
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label for="monthly_salary" class="col-sm-2 col-form-label">Lương theo tháng (VND)</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="monthlySalary" name="monthly_salary" oninput="formatMoney(this)" required>
+                                <input type="text" class="form-control" id="monthlySalary" name="monthly_salary" oninput="formatMoney(this)" value="{{ old('monthly_salary') }}" required>
+                                @if ($errors->has('monthly_salary'))
+                                    <span class="text-danger">{{ $errors->first('monthly_salary') }}</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="daily_salary" class="col-sm-2 col-form-label">Lương theo ngày (VND)</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="dailySalary" name="daily_salary" oninput="formatMoney(this)" value="{{ old('daily_salary') }}" required>
                             </div>
                         </div>
 
@@ -95,6 +105,20 @@
             document.querySelector('form').addEventListener('submit', function(event) {
                 const cleanedSalary = monthlyInput.value.replace(/[^0-9.]/g, '');
                 monthlyInput.value = cleanedSalary;
+            });
+
+            const cleaveDaily = new Cleave('#dailySalary', {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                numeralDecimalScale: 2,
+                noImmediatePrefix: true
+            });
+
+            const dailyInput = document.getElementById('dailySalary');
+
+            document.querySelector('form').addEventListener('submit', function(event) {
+                const cleanedDailySalary = dailyInput.value.replace(/[^0-9.]/g, '');
+                dailyInput.value = cleanedDailySalary;
             });
         </script>
 

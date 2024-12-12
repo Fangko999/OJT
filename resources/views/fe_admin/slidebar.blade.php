@@ -276,6 +276,12 @@
                         <span>Xem thống kê</span></a>
                 </li>
 
+                <li class="nav-item {{ request()->is('admin_leave_requests*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin_leave_requests.index') }}">
+                        <i class="fas fa-chart-pie {{ request()->is('admin_leave_requests.index*') ? 'text-primary' : '' }}"></i>
+                        <span>Đơn xin nghỉ phép</span></a>
+                </li>
+
             </div>
             
 

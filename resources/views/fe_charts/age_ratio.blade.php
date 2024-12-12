@@ -114,61 +114,56 @@
                     if (ageRatioChart) {
                         ageRatioChart.destroy();
                     }
-                    const filteredData = Object.entries(data).filter(([key, value]) => value > 0);
-                    if (filteredData.length === 0) {
-                        document.getElementById('ageRatioChart').style.display = 'none';
-                        document.getElementById('noDataMessage').style.display = 'block';
-                    } else {
-                        document.getElementById('ageRatioChart').style.display = 'block';
-                        document.getElementById('noDataMessage').style.display = 'none';
-                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                        gradient.addColorStop(0, 'rgba(75, 192, 192, 1)');
-                        gradient.addColorStop(1, 'rgba(153, 102, 255, 1)');
+                    const labels = Object.keys(data);
+                    const values = Object.values(data);
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(75, 192, 192, 1)');
+                    gradient.addColorStop(1, 'rgba(153, 102, 255, 1)');
 
-                        ageRatioChart = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: filteredData.map(([key]) => key),
-                                datasets: [{
-                                    label: 'Số lượng nhân viên',
-                                    data: filteredData.map(([_, value]) => value),
-                                    backgroundColor: gradient,
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function (context) {
-                                                return ` ${context.label}: ${context.raw}`;
-                                            }
+                    ageRatioChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Số lượng nhân viên',
+                                data: values,
+                                backgroundColor: gradient,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            return ` ${context.label}: ${context.raw}`;
                                         }
-                                    },
-                                    datalabels: {
-                                        color: '#444',
-                                        anchor: 'end',
-                                        align: 'top',
-                                        formatter: (value) => value
                                     }
                                 },
-                                scales: {
-                                    x: {
-                                        ticks: {
-                                            color: '#555',
-                                        }
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            color: '#555',
-                                        }
+                                datalabels: {
+                                    color: '#444',
+                                    anchor: 'end',
+                                    align: 'top',
+                                    formatter: (value) => value
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        color: '#555',
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: '#555',
                                     }
                                 }
                             }
-                        });
-                    }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
                 });
         }
 

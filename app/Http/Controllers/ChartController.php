@@ -17,22 +17,29 @@ class ChartController extends Controller
 
     public function employeeRatioView()
     {
-        return view('fe_charts.employee_ratio');
+        $departments = Department::all();
+        return view('fe_charts.employee_ratio', compact('departments'));
     }
 
-    public function getUserCountByDepartment()
+    public function getUserCountByDepartment(Request $request)
     {
-        $data = DB::table('users')
-    ->join('departments', 'users.department_id', '=', 'departments.id')
-    ->select('departments.name as department_name', DB::raw('count(users.id) as employee_count'))
-    ->groupBy('departments.name')
-    ->orderBy('departments.name', 'asc')  // Sắp xếp theo tên phòng ban (tăng dần)
-    ->get();
+        $query = DB::table('departments')
+            ->leftJoin('users', 'users.department_id', '=', 'departments.id')
+            ->select('departments.name as department_name', DB::raw('count(users.id) as employee_count'))
+            ->groupBy('departments.name')
+            ->orderBy('departments.name', 'asc');
 
-return response()->json([
-    'labels' => $data->pluck('department_name'),
-    'counts' => $data->pluck('employee_count'),
-]);
+        if ($request->has('departments') && $request->departments != '') {
+            $departmentIds = explode(',', $request->departments);
+            $query->whereIn('departments.id', $departmentIds);
+        }
+
+        $data = $query->get();
+
+        return response()->json([
+            'labels' => $data->pluck('department_name'),
+            'counts' => $data->pluck('employee_count'),
+        ]);
     }
 
     public function getGenderRatioByDepartment($departmentId)
@@ -68,8 +75,20 @@ return response()->json([
     {
         $startDate = $request->input('start_date', now()->subWeek()->startOfDay());
         $endDate = $request->input('end_date', now()->endOfDay());
+        $departmentId = $request->input('department');
+        $userName = $request->input('user_name');
 
-        $users = DB::table('users')->select('id', 'name')->get();
+        $query = DB::table('users')->select('id', 'name');
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
+        }
+
+        if ($userName) {
+            $query->where('name', 'like', '%' . $userName . '%');
+        }
+
+        $users = $query->get();
 
         $attendanceStats = [];
 

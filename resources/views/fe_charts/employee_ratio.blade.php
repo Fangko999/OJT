@@ -15,6 +15,45 @@
             height: 400px;
             width: 100%;
         }
+
+        .dropdown-checkboxes {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-checkboxes .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 200px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            padding: 10px;
+        }
+
+        .dropdown-checkboxes.open .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-checkboxes label {
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .dropdown-checkboxes input {
+            margin-right: 10px;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #f8f9fc;
+            border: 1px solid #d1d3e2;
+            border-radius: 5px;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -30,6 +69,19 @@
                         <a href="{{ route('chart.view') }}" class="btn btn-danger">
                             <i class="fas fa-arrow-left"></i> Quay lại
                         </a>
+                    </div>
+                    <div class="mb-4">
+                        <div class="dropdown-checkboxes">
+                            <div class="dropdown-toggle" id="dropdownButton">Chọn phòng ban</div>
+                            <div class="dropdown-menu" id="departmentDropdown">
+                                @foreach($departments as $department)
+                                    <label>
+                                        <input type="checkbox" value="{{ $department->id }}" checked>
+                                        {{ $department->name }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                     <div class="card shadow mb-4">
                         <div class="card-body">
@@ -57,77 +109,118 @@
     <script src="{{ asset('fe-access/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('fe-access/js/sb-admin-2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', loadEmployeeRatioChart);
+        let employeeChart;
 
-        async function loadEmployeeRatioChart() {
-            try {
-                const response = await fetch('http://localhost/EMS%202/api/user-count-by-department');
-                const data = await response.json();
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEmployeeRatioChart();
 
-                if (!data.labels || !data.counts || data.labels.length === 0) {
-                    document.querySelector('.chart-container').innerHTML = '<p class="text-center text-danger">Không có dữ liệu hoặc dữ liệu không hợp lệ.</p>';
-                    return;
-                }
+            document.querySelector('#dropdownButton').addEventListener('click', function () {
+                const dropdown = document.querySelector('.dropdown-checkboxes');
+                dropdown.classList.toggle('open');
+            });
 
-                if (data.labels.length !== data.counts.length) {
-                    document.querySelector('.chart-container').innerHTML = '<p class="text-center text-danger">Dữ liệu không khớp, vui lòng thử lại sau.</p>';
-                    return;
-                }
+            document.querySelectorAll('#departmentDropdown input').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    updateEmployeeRatioChart();
+                });
+            });
+        });
 
-                const ctx = document.getElementById('employeeRatioChart').getContext('2d');
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
-                gradient.addColorStop(1, 'rgba(153, 102, 255, 0.6)');
+        async function initializeEmployeeRatioChart() {
+            const chartData = await fetchChartData();
+            const ctx = document.getElementById('employeeRatioChart').getContext('2d');
 
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
+            gradient.addColorStop(1, 'rgba(153, 102, 255, 0.6)');
+
+            employeeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
                             label: 'Số lượng nhân sự',
-                            data: data.counts,
+                            data: chartData.counts,
                             backgroundColor: gradient,
                             borderColor: '#4A5568',
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + context.raw;
-                                    }
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw;
                                 }
                             }
                         },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Phòng ban',
-                                }
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            formatter: function (value) {
+                                return value;
                             },
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Số lượng nhân sự',
-                                }
+                            color: '#4A5568',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Phòng ban'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Số lượng nhân sự'
                             }
                         }
                     }
-                });
+                },
+                plugins: [ChartDataLabels]
+            });
+        }
+
+        async function updateEmployeeRatioChart() {
+            const chartData = await fetchChartData();
+
+            employeeChart.data.labels = chartData.labels;
+            employeeChart.data.datasets[0].data = chartData.counts;
+            employeeChart.update();
+        }
+
+        async function fetchChartData() {
+            try {
+                const selectedDepartments = Array.from(document.querySelectorAll('#departmentDropdown input:checked'))
+                    .map(checkbox => checkbox.value)
+                    .filter(value => value !== '');
+
+                const response = await fetch(`http://localhost/EMS%202/api/user-count-by-department?departments=${selectedDepartments.join(',')}`);
+                const data = await response.json();
+
+                return {
+                    labels: data.labels || [],
+                    counts: data.counts || []
+                };
             } catch (error) {
                 console.error('Error fetching chart data:', error);
-                document.querySelector('.chart-container').innerHTML = '<p class="text-center text-danger">Không thể tải dữ liệu biểu đồ. Vui lòng thử lại sau.</p>';
+                return { labels: [], counts: [] };
             }
         }
     </script>

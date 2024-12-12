@@ -18,8 +18,6 @@
         </a>
     </li>
 
-    <hr class="sidebar-divider">
-
     <li class="nav-item {{ request()->routeIs('attendance.monthlyReport') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('attendance.monthlyReport') }}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
@@ -27,6 +25,12 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('leave_requests.index') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('leave_requests.index') }}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Đơn xin nghỉ phép</span>
+        </a>
+    </li>
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 

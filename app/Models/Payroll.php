@@ -24,4 +24,11 @@ class Payroll extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public static function getSalaryStatisticsByMonth($month)
+    {
+        return self::where('month', $month)
+            ->select('user_id', 'salary_received')
+            ->get();
+    }
 }

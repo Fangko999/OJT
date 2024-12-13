@@ -95,6 +95,11 @@ Route::middleware(['web', 'auth', 'checkRole:1'])->group(function () {
     Route::get('/attendance-ratio', [ChartController::class, 'attendanceRatioView'])->name('attendance.ratio.view');
     Route::get('/age-ratio', [ChartController::class, 'ageRatioView'])->name('age.ratio');
     Route::get('/api/age-ratio-by-department/{departmentId}', [ChartController::class, 'getAgeRatioByDepartment']);
+    Route::get('/salary-statistics', [ChartController::class, 'salaryStatisticsView'])->name('salary.statistics');
+    Route::get('/api/salary-statistics-by-month', [ChartController::class, 'getSalaryStatisticsByMonth'])->name('salary.statistics.byMonth');
+    Route::get('/seniority-ratio', [ChartController::class, 'seniorityRatioView'])->name('seniority.ratio');
+    Route::get('/api/seniority-ratio', [ChartController::class, 'getSeniorityRatio'])->name('api.seniority.ratio');
+    Route::get('/api/seniority-ratio-by-department/{departmentId?}', [ChartController::class, 'getSeniorityRatioByDepartment']);
 
     // Leave request management routes
     Route::get('/manage-leave_requests', [AdminLeaveRequestController::class, 'index'])->name('admin_leave_requests.index');

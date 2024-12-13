@@ -83,6 +83,12 @@
                                 <a href="{{ route('age.ratio') }}" class="btn btn-primary">
                                     <i class="fas fa-birthday-cake"></i> Thống kê độ tuổi của nhân viên theo phòng ban
                                 </a>
+                                <a href="{{ route('salary.statistics') }}" class="btn btn-primary">
+                                    <i class="fas fa-chart-bar"></i> Thống kê lương theo tháng
+                                </a>
+                                <a href="{{ route('seniority.ratio') }}" class="btn btn-primary">
+                                    <i class="fas fa-user-clock"></i> Thống kê thâm niên theo phòng ban
+                                </a>
                             </div>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\Payroll;
 
 class ChartController extends Controller
 {
@@ -153,5 +154,99 @@ class ChartController extends Controller
     {
         $departments = Department::all();
         return view('fe_charts.age_ratio', compact('departments'));
+    }
+
+    public function salaryStatisticsView()
+    {
+        $departments = Department::all();
+        return view('fe_charts.salary_statistics', compact('departments'));
+    }
+
+    public function getSalaryStatisticsByMonth(Request $request)
+    {
+        $month = $request->input('month', now()->format('Y-m'));
+        $departmentId = $request->input('department_id');
+
+        $query = DB::table('payrolls')
+            ->join('users', 'payrolls.user_id', '=', 'users.id')
+            ->select('users.name as user_name', DB::raw('SUM(salary_received) as salary_received'))
+            ->where(DB::raw('DATE_FORMAT(payrolls.created_at, "%Y-%m")'), $month);
+
+        if ($departmentId) {
+            $query->where('users.department_id', $departmentId);
+        }
+
+        $data = $query->groupBy('users.name')->get();
+
+        return response()->json([
+            'labels' => $data->pluck('user_name'),
+            'salaries' => $data->pluck('salary_received'),
+        ]);
+    }
+
+    public function getSeniorityRatioByDepartment($departmentId = null)
+    {
+        $query = DB::table('users')
+            ->select(DB::raw('
+                CASE
+                    WHEN TIMESTAMPDIFF(YEAR, created_at, CURDATE()) < 1 THEN "Dưới 1 năm"
+                    WHEN TIMESTAMPDIFF(YEAR, created_at, CURDATE()) BETWEEN 1 AND 3 THEN "1-3 năm"
+                    WHEN TIMESTAMPDIFF(YEAR, created_at, CURDATE()) BETWEEN 3 AND 5 THEN "3-5 năm"
+                    ELSE "Trên 5 năm"
+                END as seniority_range,
+                count(id) as count
+            '));
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
+        }
+
+        $data = $query->groupBy('seniority_range')->get();
+
+        $seniorityDistribution = [
+            'Dưới 1 năm' => $data->where('seniority_range', 'Dưới 1 năm')->first()->count ?? 0,
+            '1-3 năm' => $data->where('seniority_range', '1-3 năm')->first()->count ?? 0,
+            '3-5 năm' => $data->where('seniority_range', '3-5 năm')->first()->count ?? 0,
+            'Trên 5 năm' => $data->where('seniority_range', 'Trên 5 năm')->first()->count ?? 0,
+        ];
+
+        return response()->json($seniorityDistribution);
+    }
+
+    public function seniorityRatioView()
+    {
+        $departments = Department::all();
+        return view('fe_charts.seniority_ratio', compact('departments'));
+    }
+
+    public function getSeniorityRatio(Request $request)
+    {
+        $departmentId = $request->input('department_id');
+
+        $query = DB::table('users')
+            ->select(DB::raw('
+                CASE
+                    WHEN TIMESTAMPDIFF(YEAR, created_at, CURDATE()) < 1 THEN "Dưới 1 năm"
+                    WHEN TIMESTAMPDIFF(YEAR, created_at, CURDATE()) BETWEEN 1 AND 3 THEN "1-3 năm"
+                    WHEN TIMESTAMPDIFF(YEAR, created_at, CURDATE()) BETWEEN 3 AND 5 THEN "3-5 năm"
+                    ELSE "Trên 5 năm"
+                END as seniority_range,
+                count(id) as count
+            '));
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
+        }
+
+        $data = $query->groupBy('seniority_range')->get();
+
+        $seniorityDistribution = [
+            'Dưới 1 năm' => $data->where('seniority_range', 'Dưới 1 năm')->first()->count ?? 0,
+            '1-3 năm' => $data->where('seniority_range', '1-3 năm')->first()->count ?? 0,
+            '3-5 năm' => $data->where('seniority_range', '3-5 năm')->first()->count ?? 0,
+            'Trên 5 năm' => $data->where('seniority_range', 'Trên 5 năm')->first()->count ?? 0,
+        ];
+
+        return response()->json($seniorityDistribution);
     }
 }

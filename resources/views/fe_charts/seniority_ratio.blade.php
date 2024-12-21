@@ -64,11 +64,13 @@
                 @include('fe_admin.topbar') <!-- Thanh trên -->
 
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Biểu đồ thâm niên</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Biểu đồ thống kê thâm niên làm việc</h1>
+                    <div class="mb-4">
+                        <a href="{{ route('chart.view') }}" class="btn btn-danger">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-white">Thâm niên theo phòng ban</h6>
-                        </div>
                         <div class="card-body">
                             <div class="form-group">
                                 <label for="departmentSelect">Chọn phòng ban:</label>

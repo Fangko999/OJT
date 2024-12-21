@@ -55,6 +55,8 @@ Route::middleware(['web', 'auth', 'checkRole:1'])->group(function () {
     Route::patch('/departments/{id}/update-status', [DepartmentController::class, 'updateStatus'])->name('departments.updateStatus');
     Route::get('/departments/{id}/sub-departments', [DepartmentController::class, 'showSubDepartments'])->name('departments.subDepartments');
     Route::get('/departments/search', [DepartmentController::class, 'search'])->name('departments.search');
+    Route::get('/departments/{id}/edit', [DepartmentController::class, 'edit'])->name('departments.edit');
+    Route::patch('/departments/{id}', [DepartmentController::class, 'update'])->name('departments.update');
 
     // User management routes
     Route::get('/users', [UserController::class, 'index'])->name('users');

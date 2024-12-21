@@ -15,44 +15,74 @@
 
     <!-- Custom CSS -->
     <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Nunito', sans-serif;
+        }
+
         .button-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 15px;
             margin-top: 20px;
         }
 
         .btn-primary {
-            background-color: #4e73df; /* Màu xanh dương đậm */
+            background-color: #4e73df;
             border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
             transition: all 0.3s ease-in-out;
         }
 
         .btn-primary:hover {
-            background-color: #2e59d9; /* Màu xanh dương sáng */
+            background-color: #2e59d9;
             color: #fff;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            transform: scale(1.05);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
         }
 
         .card {
-            border-radius: 10px;
+            border-radius: 15px;
             border: none;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
         }
 
         h1 {
             color: #4e73df;
             font-weight: bold;
+            text-align: center;
         }
 
         .container-fluid {
-            max-width: 800px;
-            margin: auto;
+            max-width: 900px;
+            margin: 30px auto;
         }
 
         .text-center {
             margin-bottom: 20px;
+        }
+
+        footer {
+            background-color: #f8f9fc;
+            padding: 20px 0;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -61,13 +91,13 @@
     <div id="wrapper">
         @include('fe_admin.slidebar') <!-- Thanh bên -->
 
-        <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content-wrapper" class="d-flex flex-column fade-in">
             <div id="content">
                 @include('fe_admin.topbar') <!-- Thanh trên -->
 
                 <!-- Biểu đồ tỷ lệ nhân viên giữa các phòng ban -->
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Biểu đồ thống kê</h1>
+                    <h1 class="h3 mb-4">Biểu đồ thống kê</h1>
                     <div class="card shadow mb-4">
                         <div class="card-body text-center">
                             <div class="button-container">
@@ -99,7 +129,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>© {{ date('Y') }} Your Company. All Rights Reserved.</span>
+                        <span>&copy; {{ date('Y') }} Your Company. All Rights Reserved.</span>
                     </div>
                 </div>
             </footer>

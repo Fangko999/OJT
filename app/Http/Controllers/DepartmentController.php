@@ -34,7 +34,7 @@ class DepartmentController extends Controller
         // Lấy tất cả người dùng có trạng thái hoạt động (status = 1) thuộc các phòng ban đó
         $users = User::whereIn('department_id', $departmentIds)
                      ->where('status', 1) // Chỉ lấy người dùng có trạng thái hoạt động
-                     ->get();
+                     ->paginate(4); // Paginate users
     
         // Trả về view với dữ liệu phòng ban và danh sách người dùng
         return view('fe_department/department_members', compact('department', 'users'));
@@ -151,28 +151,58 @@ class DepartmentController extends Controller
     }
     
     public function showSubDepartments($id)
-{
-    // Tìm phòng ban theo ID
-    $department = Department::with('children')->findOrFail($id); // Giả sử 'children' là mối quan hệ trong model Department
+    {
+        // Tìm phòng ban theo ID
+        $department = Department::with('children')->findOrFail($id); // Giả sử 'children' là mối quan hệ trong model Department
 
-    // Trả về view với thông tin phòng ban và các tổ con
-    return view('fe_department/sub_departments', compact('department'));
-}
-public function show($id){
-    $department = Department::with('users')->findOrFail($id);
-    return view('fe_department/department', compact('department'));
-}
-public function search(Request $request){
-    $validated = $request->validate([
-        'query' => 'required|string|max:255',
-    ]);
+        // Trả về view với thông tin phòng ban và các tổ con
+        return view('fe_department/sub_departments', compact('department'));
+    }
 
-    // Tìm kiếm phòng ban theo tên
-    $departments = Department::where('name', 'LIKE', '%' . $validated['query'] . '%')
-        ->with('children') // Bao gồm các phòng ban con nếu cần
-        ->get();
+    public function show($id)
+    {
+        $department = Department::find($id);
+        $users = User::where('department_id', $id)->paginate(5); // Paginate users
+        return view('fe_department.department_members', compact('department', 'users'));
+    }
 
-    return view('fe_department/departments', compact('departments'));
+    public function search(Request $request)
+    {
+        $validated = $request->validate([
+            'query' => 'required|string|max:255',
+        ]);
 
-}
+        // Tìm kiếm phòng ban theo tên
+        $departments = Department::where('name', 'LIKE', '%' . $validated['query'] . '%')
+            ->with('children') // Bao gồm các phòng ban con nếu cần
+            ->get();
+
+        return view('fe_department/departments', compact('departments'));
+    }
+
+    public function edit($id)
+    {
+        $department = Department::findOrFail($id);
+        $departments = Department::where('status', 1)->get();
+        return view('fe_department/edit_department', compact('department', 'departments'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:departments,id',
+            'status' => 'required|boolean',
+        ]);
+
+        $department = Department::findOrFail($id);
+        $department->name = $validated['name'];
+        $department->parent_id = $validated['parent_id'] ?? 0;
+        $department->status = $validated['status'];
+        $department->updated_by = auth()->id();
+        $department->updated_at = now();
+        $department->save();
+
+        return redirect()->route('departments.show', $id)->with('success', 'Department updated successfully.');
+    }
 }

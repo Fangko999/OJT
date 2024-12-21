@@ -26,14 +26,14 @@
 
 
                     <div class="container pt-5  mb-5">
-                        <h2>Quản lý đơn xin nghỉ</h2>
+                        <h2>Quản lý đơn xin nghỉ phép</h2>
                         <div class="row">
                             <div class="col-md-9">
                                 <form method="GET" action="{{ route('leave_requests.index') }}">
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <select name="status" class="form-control">
-                                                <option value="all">Tất cả trạng thái</option>
+                                                <option value="all">Trạng thái đơn</option>
                                                 <option value="0">Đang chờ</option> <!-- 0 -->
                                                 <option value="1">Đã phê duyệt</option> <!-- 1 -->
                                                 <option value="2">Đã từ chối</option> <!-- 2 -->

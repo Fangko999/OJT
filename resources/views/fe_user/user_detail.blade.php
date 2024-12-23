@@ -28,9 +28,9 @@
                 @include('fe_admin.topbar') <!-- Topbar -->
                 <div class="container-fluid">
                     <div class="card-footer">
-                        <a href="{{ route('users') }}" class="btn btn-secondary mt-3">
-                            <i class="fas fa-arrow-left"></i>  <!-- Icon chữ "i" trong vòng tròn -->
-                            Quay lại danh sách
+                        <a href="{{ route('users') }}" class="btn btn-danger mt-4">
+                            <i class="fas fa-arrow-left"></i>
+                            Quay lại
                         </a>
                     </div>
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -54,6 +54,18 @@
                             <!-- Hiển thị thông tin chi tiết -->
                             <div class="container-fluid">
                                 <div class="form-group">
+                                    <label for="name">Họ và Tên</label>
+                                    <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $user->name) }}" required readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="gender">Giới tính</label>
+                                    <input type="text" name="gender" id="gender" class="form-control" value="{{ old('gender', $user->gender == 1 ? 'Nam' : 'Nữ') }}" required readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="date_of_birth">Ngày sinh</label>
+                                    <input type="date" name="date_of_birth" id="date_of_birth" class="form-control" value="{{ old('date_of_birth', $user->date_of_birth) }}" required readonly>
+                                </div>
+                                <div class="form-group">
                                     <label for="email">Email</label>
                                     <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $user->email) }}" required readonly>
                                 </div>
@@ -64,7 +76,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="department">Phòng ban</label>
-                                    @php
+                                    <!-- @php
                                         // Khởi tạo biến để chứa giá trị của phòng ban
                                         $departmentValue = 'Chưa xác định'; // Giá trị mặc định
                                         if ($user->department) {
@@ -74,17 +86,17 @@
                                                 $departmentValue = $user->department->name;
                                             }
                                         }
-                                    @endphp
+                                    @endphp -->
                                     <input type="text" name="department" id="department" class="form-control" value="{{ old('department', $departmentValue) }}" required readonly>
                                 </div>
                                 <div class="form-group">
                                     <label for="position">Chức vụ</label>
                                     <input type="text" name="position" id="position" class="form-control" 
-                                           value="{{ $user->position == 'Admin' ? 'Admin' : ($user->position == 'Tổ trưởng' ? 'Tổ trưởng' : 'Nhân viên') }}" readonly>
+                                           value="{{ $user->role == 1 ? 'Admin' : ($user->role == 2 ? 'Nhân viên chính thức' : 'Nhân viên tạm thời') }}" readonly>
                                 </div>
                                 <div class="form-group">
-                                    <label for="salaryCoefficient">Hệ số lương</label>
-                                    <input type="text" name="salaryCoefficient" id="salary_coefficient" class="form-control" value="{{ old('salary_coefficient', isset($user->salary) ? $user->salary->salaryCoefficient : '') }}" required readonly>
+                                    <label for="salaryCoefficient">Bậc lương</label>
+                                    <input type="text" name="salaryCoefficient" id="salary_coefficient" class="form-control" value="{{ old('salary_coefficient', isset($user->salaryLevel) ? $user->salaryLevel->level_name . ' - Lương tháng: ' . number_format($user->salaryLevel->monthly_salary, 0, ',', '.') . 'đ - Lương ngày: ' . number_format($user->salaryLevel->daily_salary, 0, ',', '.') . 'đ' : 'Chưa có') }}" required readonly>
                                 </div>
                                 <div class="form-group">
                                     <label for="status">Trạng thái</label>
@@ -113,6 +125,25 @@
                                 @csrf
                                 <div class="modal-body">
                                     <div class="form-group">
+                                        <label for="name">Họ và Tên:</label>
+                                        <input type="text" name="name" id="name" class="form-control" value="{{ $user->name }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="gender">Giới tính:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="gender" id="gender_male" value="1" {{ $user->gender == '1' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="gender_male">Nam</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="gender" id="gender_female" value="0" {{ $user->gender == '0' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="gender_female">Nữ</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="date_of_birth">Ngày sinh:</label>
+                                        <input type="date" name="date_of_birth" id="date_of_birth" class="form-control" value="{{ $user->date_of_birth }}" required>
+                                    </div>
+                                    <div class="form-group">
                                         <label for="email">Email:</label>
                                         <input type="email" class="form-control" id="email" name="email" value="{{ $user->email }}" required>
                                     </div>
@@ -121,17 +152,17 @@
                                         <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ $user->phone_number }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="position">Chức vụ:</label>
-                                        <select class="form-control" id="position" name="position" required>
-                                            <option value="Admin" {{ $user->position == 'Admin' ? 'selected' : '' }}>Admin</option>
-                                            <option value="Tổ Trưởng" {{ $user->position == 'Tổ trưởng' ? 'selected' : '' }}>Tổ trưởng</option>
-                                            <option value="Nhân viên" {{ $user->position == 'Nhân viên' ? 'selected' : '' }}>Nhân viên</option>
+                                        <label for="role">Chức vụ:</label>
+                                        <select class="form-control" id="role" name="role" required>
+                                            <option value="1" {{ $user->role == 1 ? 'selected' : '' }}>Admin</option>
+                                            <option value="2" {{ $user->role == 2 ? 'selected' : '' }}>Nhân viên chính thức</option>
+                                            <option value="3" {{ $user->role == 3 ? 'selected' : '' }}>Nhân viên tạm thời</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="department_id">Chọn phòng ban</label>
                                         <select name="department_id" id="department_id" class="form-control">
-                                            @foreach ($departments as $department)
+                                            @foreach ($departments->where('status', 1) as $department)
                                                 <option value="{{ $department->id }}" {{ $user->department_id == $department->id ? 'selected' : '' }}>
                                                     {{ $department->name }}
                                                 </option>
@@ -141,9 +172,10 @@
                                     <div class="form-group">
                                         <label for="salary_level_id">Chọn bậc lương</label>
                                         <select name="salary_level_id" id="salary_level_id" class="form-control">
+                                            <option value="">Chưa có</option>
                                             @foreach ($salaries as $salary)
-                                                <option value="{{ $salary->id }}" {{ $user->salary_level_id == $salary->id ? 'selected' : '' }}>
-                                                    {{ $salary->level_name }}
+                                                <option value="{{ $salary->id }}" data-department="{{ $salary->department_id }}" {{ $user->salary_level_id == $salary->id ? 'selected' : '' }}>
+                                                    {{ $salary->level_name }} - Lương tháng: {{ number_format($salary->monthly_salary, 0, ',', '.') }}đ - Lương ngày: {{ number_format($salary->daily_salary, 0, ',', '.') }}đ
                                                 </option>
                                             @endforeach
                                         </select>
@@ -186,20 +218,20 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="/fe-access/vendor/jquery/jquery.min.js"></script>
-    <script src="/fe-access/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('fe-access/vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('fe-access/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="/fe-access/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{{ asset('fe-access/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="/fe-access/js/sb-admin-2.min.js"></script>
+    <script src="{{ asset('fe-access/js/sb-admin-2.min.js') }}"></script>
 
     <!-- Custom Script for filtering salary options based on department selection -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var departmentSelect = document.getElementById('department_id');
-            var salarySelect = document.getElementById('salary_id');
+            var salarySelect = document.getElementById('salary_level_id'); // Corrected ID
             var allSalaries = [...salarySelect.options];
 
             departmentSelect.addEventListener('change', function() {

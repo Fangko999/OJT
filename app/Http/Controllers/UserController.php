@@ -99,7 +99,7 @@ class UserController extends Controller
         ], [
             'email.regex' => 'Email không hợp lệ. Vui lòng nhập đúng định dạng.',
             'email.unique' => 'Email đã tồn tại.',
-            'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 0, 84, hoặc +84 và có 9 chữ số phía sau.',
+            'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 0, 84, hoặc +84 và có 10 hoặc 11 chữ số.',
             'date_of_birth.before' => 'Nhân viên phải trên 18 tuổi.',
         ]);
     
@@ -191,7 +191,7 @@ class UserController extends Controller
     public function showDetail($id)
     {
         $user = User::with(['department', 'salaryLevel'])->findOrFail($id);
-        $departments = Department::where('parent_id', 0)->get();
+        $departments = Department::where('status', 1)->get(); // Lấy tất cả phòng ban còn hoạt động
         $salaries = SalaryLevel::all(); // Load all salary levels
     
         $subDepartments = $user->department && $user->department->parent_id 
@@ -222,6 +222,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
     
         $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone_number' => 'required|string|max:15',
             'department_id' => 'required|exists:departments,id',
@@ -239,7 +240,7 @@ class UserController extends Controller
         }
     
         $user->update($request->only([
-            'email', 'phone_number', 'department_id', 'status', 'salary_level_id', 'gender', 'date_of_birth'
+            'name', 'email', 'phone_number', 'department_id', 'status', 'salary_level_id', 'gender', 'date_of_birth'
         ]) + ['updated_by' => Auth::id()]);
     
         return redirect()->route('users.detail', ['id' => $user->id])
@@ -313,5 +314,11 @@ public function saveReminderSettings(Request $request)
     } else {
         return back()->withErrors(['error' => 'Lỗi khi cập nhật thời gian nhắc nhở']);
     }
+}
+
+public function checkEmail(Request $request)
+{
+    $exists = User::where('email', $request->email)->exists();
+    return response()->json(['exists' => $exists]);
 }
 }

@@ -44,6 +44,7 @@ Route::middleware('web')->group(function () {
 Route::post('users/import/', [UserController::class, 'importPost'])->name('users.import');
 Route::get('/export-users', [UserController::class, 'export'])->name('users.export');
 Route::get('/export-template', [UserController::class, 'exportTemplate'])->name('export.template');
+Route::post('/users/check-email', [UserController::class, 'checkEmail'])->name('users.checkEmail');
 
 // Admin routes
 Route::middleware(['web', 'auth', 'checkRole:1'])->group(function () {
@@ -116,7 +117,7 @@ Route::middleware(['web', 'auth', 'checkRole:1'])->group(function () {
 });
 
 // User routes
-Route::middleware(['web', 'auth', 'checkRole:2'])->group(function () {
+Route::middleware(['web', 'auth', 'checkRole:2,3'])->group(function () {
     // Attendance routes
     Route::get('/attendance', [User_attendanceController::class, 'index'])->name('attendance');
     Route::post('/check-in', [User_attendanceController::class, 'checkIn'])->name('attendance.checkin');

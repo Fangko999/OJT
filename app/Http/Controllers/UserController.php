@@ -25,11 +25,13 @@ class UserController extends Controller
         $query = User::with('department');  // Khởi tạo query
 
         if ($search) {
-            // Thêm điều kiện tìm kiếm theo tên, email hoặc chức vụ
+            // Thêm điều kiện tìm kiếm theo tên, email hoặc tên phòng ban
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
-                    ->orWhere('position', 'LIKE', "%{$search}%");
+                    ->orWhereHas('department', function ($q) use ($search) {
+                        $q->where('name', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -68,12 +70,10 @@ class UserController extends Controller
 
     public function create(Request $request)
     {
-        $departments = $this->getDepartments(); // Lấy phòng ban cha
+        $departments = Department::where('status', 1)->get(); // Lấy tất cả phòng ban còn hoạt động
+        $salaries = SalaryLevel::all(); // Lấy tất cả bậc lương
 
-        // Lấy phòng ban con nếu đã chọn phòng ban cha
-        $subDepartments = $request->has('parent_id') ? $this->getDepartments($request->input('parent_id')) : [];
-
-        return view('fe_user.create_user', compact('departments', 'subDepartments'));
+        return view('fe_user.create_user', compact('departments', 'salaries'));
     }
     public function store(Request $request)
     {
@@ -88,15 +88,19 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'phone_number' => [
                 'required',
-                'regex:/^84[0-9]{9,10}$/',
+                'regex:/^(\+84|84|0)[0-9]{9}$/',
             ],
-            'position' => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
             'role' => 'required|integer', // Đảm bảo trường role phải được nhập
+            'gender' => 'required|in:0,1',
+            'date_of_birth' => 'required|date|before:' . now()->subYears(18)->format('Y-m-d'),
+            'salary_level_id' => 'required|exists:salary_level,id',
 
         ], [
             'email.regex' => 'Email không hợp lệ. Vui lòng nhập đúng định dạng.',
-            'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 84 và có 9-10 chữ số.',
+            'email.unique' => 'Email đã tồn tại.',
+            'phone_number.regex' => 'Số điện thoại phải bắt đầu bằng 0, 84, hoặc +84 và có 9 chữ số phía sau.',
+            'date_of_birth.before' => 'Nhân viên phải trên 18 tuổi.',
         ]);
     
         if ($validator->fails()) {
@@ -112,13 +116,15 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'phone_number' => $request->phone_number,
+            'phone_number' => $request->formatted_phone_number,
             'department_id' => $request->department_id,
-            'position' => $request->position,
             'status' => 1,
             'role' => $request->role , // Gán role mặc định nếu không có
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
+            'gender' => $request->gender,
+            'date_of_birth' => $request->date_of_birth,
+            'salary_level_id' => $request->salary_level_id,
         ]);
     
         return redirect()->route('users')->with('success', 'Người dùng đã được tạo thành công.');
@@ -159,7 +165,6 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone_number' => 'required|string|max:15',
-            'position' => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
         ]);
 
@@ -171,7 +176,6 @@ class UserController extends Controller
             'name',
             'email',
             'phone_number',
-            'position',
             'department_id'
         ]) + ['updated_by' => Auth::id()]);
 
@@ -220,10 +224,14 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone_number' => 'required|string|max:15',
-            'position' => 'required|string',
             'department_id' => 'required|exists:departments,id',
             'status' => 'required|string',
-            'salary_level_id' => 'required|exists:salary_levels,id', // Xác thực salary_level_id
+            'salary_level_id' => 'required|exists:salary_level,id', // Xác thực salary_level_id
+            'gender' => 'required|in:0,1',
+            'date_of_birth' => 'required|date|before:' . now()->subYears(18)->format('Y-m-d'),
+        ], [
+            'email.unique' => 'Email đã tồn tại.',
+            'date_of_birth.before' => 'Nhân viên phải trên 18 tuổi.',
         ]);
     
         if ($validator->fails()) {
@@ -231,7 +239,7 @@ class UserController extends Controller
         }
     
         $user->update($request->only([
-            'email', 'phone_number', 'position', 'department_id', 'status', 'salary_level_id'
+            'email', 'phone_number', 'department_id', 'status', 'salary_level_id', 'gender', 'date_of_birth'
         ]) + ['updated_by' => Auth::id()]);
     
         return redirect()->route('users.detail', ['id' => $user->id])

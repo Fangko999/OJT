@@ -247,7 +247,27 @@
                                     @endforelse
                                 </tbody>
                             </table>
-                            {{ $users->links() }}
+                            <div class="d-flex justify-content-center mt-3">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                @if ($users->currentPage() > 1)
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $users->url(1) }}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                @endif
+                                {{ $users->links() }}
+                                @if ($users->currentPage() < $users->lastPage())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $users->url($users->lastPage()) }}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                @endif
+                            </ul>
+                        </nav>
+                    </div>
                         </div>
                     </div>
                     @else

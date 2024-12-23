@@ -234,6 +234,7 @@
                                 <div class="input-group">
                                     <input type="text" name="query" class="form-control" placeholder="Tìm kiếm phòng ban" required aria-label="Search" aria-describedby="search-button" id="search-input">
                                     <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" id="clear-search">X</button>
                                         <button class="btn btn-primary" type="submit" id="search-button">Tìm kiếm</button>
                                     </div>
                                 </div>
@@ -346,6 +347,7 @@
             const toggleButtons = document.querySelectorAll('.toggle-btn');
             const searchInput = document.getElementById('search-input');
             const searchForm = document.getElementById('search-form');
+            const clearSearchButton = document.getElementById('clear-search');
 
             toggleButtons.forEach(button => {
                 button.addEventListener('click', function () {
@@ -363,9 +365,8 @@
                 });
             });
 
-            // Remove the automatic search on input event
-            searchInput.removeEventListener('input', function () {
-                searchForm.submit();
+            clearSearchButton.addEventListener('click', function () {
+                searchInput.value = '';
             });
         });
     </script>

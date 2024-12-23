@@ -22,7 +22,7 @@
                 @include('fe_admin.topbar') <!-- Thanh trên -->
 
                 <div class="container-fluid">
-                    <button onclick="window.history.back();" class="btn btn-secondary mt-4">
+                    <button onclick="window.history.back();" class="btn btn-danger mt-4">
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </button>
                     <div class="card mt-4">

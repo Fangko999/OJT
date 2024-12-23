@@ -168,9 +168,27 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            <div class="pagination-wrapper text-center mt-3">
+                            <div class="d-flex justify-content-center mt-3">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                @if ($attendanceData->currentPage() > 1)
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $attendanceData->url(1) }}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                @endif
                                 {{ $attendanceData->links() }}
-                            </div>
+                                @if ($attendanceData->currentPage() < $attendanceData->lastPage())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $attendanceData->url($attendanceData->lastPage()) }}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                @endif
+                            </ul>
+                        </nav>
+                    </div>
                         </div>
                     @else
                         <div class="text-center mt-3">

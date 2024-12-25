@@ -14,6 +14,7 @@
             position: relative;
             height: 400px;
             width: 100%;
+            background: linear-gradient(135deg, #f8f9fc 0%, #e2e6ea 100%);
         }
 
         .dropdown-checkboxes {
@@ -30,16 +31,26 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             z-index: 1;
             padding: 10px;
+            max-height: 300px; /* Set a max height for the dropdown */
+            overflow-y: auto; /* Enable vertical scrolling */
+            transition: opacity 0.3s ease;
+            opacity: 0;
         }
 
         .dropdown-checkboxes.open .dropdown-menu {
             display: block;
+            opacity: 1;
         }
 
         .dropdown-checkboxes label {
             display: flex;
             align-items: center;
             padding: 5px 0;
+        }
+
+        .dropdown-checkboxes label:hover {
+            background-color: #f1f1f1;
+            transition: background-color 0.3s ease;
         }
 
         .dropdown-checkboxes input {
@@ -53,6 +64,132 @@
             border: 1px solid #d1d3e2;
             border-radius: 5px;
             display: inline-block;
+        }
+
+        .dropdown-toggle:hover, .dropdown-toggle:focus {
+            background-color: #e2e6ea;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-toggle:active {
+            transform: scale(0.98);
+        }
+
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-danger {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-danger::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.5);
+            transition: width 0.3s ease, height 0.3s ease, top 0.3s ease, left 0.3s ease;
+            border-radius: 50%;
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .btn-danger:active::after {
+            width: 0;
+            height: 0;
+            top: 50%;
+            left: 50%;
+            opacity: 1;
+        }
+
+        .btn-danger span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-danger.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .typing-effect::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .pagination-animation {
+            display: flex;
+            list-style: none;
+        }
+
+        .pagination-animation li {
+            margin: 0 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .pagination-animation li:hover {
+            transform: scale(1.2);
+        }
+
+        .filter-effects {
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+
+        .filter-effects:hover {
+            filter: grayscale(0%);
+        }
+
+        .focus-animation:focus {
+            animation: focusPulse 1s infinite;
+        }
+
+        @keyframes focusPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.5); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+        }
+
+        .validation-feedback {
+            color: #dc3545;
+            font-size: 0.875em;
         }
     </style>
 </head>
@@ -74,6 +211,10 @@
                         <div class="dropdown-checkboxes">
                             <div class="dropdown-toggle" id="dropdownButton">Chọn phòng ban</div>
                             <div class="dropdown-menu" id="departmentDropdown">
+                                <label>
+                                    <input type="checkbox" id="selectAllDepartments">
+                                    Tất cả
+                                </label>
                                 @foreach($departments as $department)
                                     <label>
                                         <input type="checkbox" value="{{ $department->id }}" checked>
@@ -114,6 +255,10 @@
         let employeeChart;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Select all departments by default
+            document.querySelectorAll('#departmentDropdown input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
             initializeEmployeeRatioChart();
 
             document.querySelector('#dropdownButton').addEventListener('click', function () {
@@ -125,6 +270,14 @@
                 checkbox.addEventListener('change', function () {
                     updateEmployeeRatioChart();
                 });
+            });
+
+            document.querySelector('#selectAllDepartments').addEventListener('change', function () {
+                const isChecked = this.checked;
+                document.querySelectorAll('#departmentDropdown input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                updateEmployeeRatioChart();
             });
         });
 
@@ -210,6 +363,10 @@
                 const selectedDepartments = Array.from(document.querySelectorAll('#departmentDropdown input:checked'))
                     .map(checkbox => checkbox.value)
                     .filter(value => value !== '');
+
+                if (selectedDepartments.length === 0) {
+                    return { labels: [], counts: [] };
+                }
 
                 const response = await fetch(`http://localhost/EMS%202/api/user-count-by-department?departments=${selectedDepartments.join(',')}`);
                 const data = await response.json();

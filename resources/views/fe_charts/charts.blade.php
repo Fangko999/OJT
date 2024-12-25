@@ -18,6 +18,7 @@
         body {
             background-color: #f8f9fc;
             font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #f8f9fc 25%, #e2e6ea 100%);
         }
 
         .button-container {
@@ -28,19 +29,48 @@
             margin-top: 20px;
         }
 
-        .btn-primary {
+        .btn-primary, .btn-secondary {
             background-color: #4e73df;
             border: none;
             border-radius: 50px;
             padding: 10px 20px;
             transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover, .btn-secondary:hover {
             background-color: #2e59d9;
             color: #fff;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
             transform: translateY(-3px);
+        }
+
+        .btn-primary:focus, .btn-secondary:focus {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+
+        .btn-primary:active, .btn-secondary:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary::after, .btn-secondary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+        }
+
+        .btn-primary:active::after, .btn-secondary:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0;
         }
 
         .card {
@@ -48,12 +78,19 @@
             border: none;
             box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
             overflow: hidden;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            opacity: 0.95;
         }
 
         h1 {
             color: #4e73df;
             font-weight: bold;
             text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .container-fluid {
@@ -68,6 +105,7 @@
         footer {
             background-color: #f8f9fc;
             padding: 20px 0;
+            backdrop-filter: blur(10px);
         }
 
         .fade-in {
@@ -158,6 +196,13 @@
                     $(this).removeClass('animate__animated animate__pulse');
                 }
             );
+
+            $('.btn-primary').on('click', function () {
+                $(this).addClass('loading');
+                setTimeout(() => {
+                    $(this).removeClass('loading');
+                }, 2000);
+            });
         });
     </script>
 </body>

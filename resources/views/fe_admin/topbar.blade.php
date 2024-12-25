@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand navbar-light bg-light topbar mb-4 static-top shadow">
+<nav class="navbar navbar-expand navbar-light bg-light topbar mb-4 static-top shadow custom-topbar">
 
     <!-- Sidebar Toggle (Topbar) -->
     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -60,3 +60,27 @@
         }
     </script>
 </nav>
+
+<style>
+    .custom-topbar {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .custom-topbar .navbar-nav .nav-item .nav-link {
+        color: #4e73df;
+    }
+    .custom-topbar .navbar-nav .nav-item .nav-link:hover {
+        color: #2e59d9;
+    }
+    .custom-topbar .navbar-nav .nav-item .dropdown-menu {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+    }
+    .custom-topbar .navbar-nav .nav-item .dropdown-menu .dropdown-item {
+        color: #3a3b45;
+    }
+    .custom-topbar .navbar-nav .nav-item .dropdown-menu .dropdown-item:hover {
+        color: #2e59d9;
+        background-color: #f8f9fc;
+    }
+</style>

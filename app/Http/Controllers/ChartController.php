@@ -13,7 +13,14 @@ class ChartController extends Controller
 
     public function chartView()
     {
-        return view('fe_charts/charts');
+        $departments = Department::all();
+        return view('fe_charts/charts', compact('departments'));
+    }
+
+    public function showCharts()
+    {
+        $departments = Department::all();
+        return view('fe_charts.charts', compact('departments'));
     }
 
     public function employeeRatioView()

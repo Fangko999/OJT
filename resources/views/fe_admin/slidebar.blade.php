@@ -48,6 +48,8 @@
 
         .btn-primary:hover {
             background-color: #0056b3;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .btn-danger {
@@ -58,6 +60,8 @@
 
         .btn-danger:hover {
             background-color: #c82333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .alert-success {
@@ -151,6 +155,7 @@
         .nav-item .nav-link:hover {
             background-color: #4e4e4e;
             transform: translateX(5px);
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         /* Active link effect */
@@ -159,25 +164,53 @@
             font-weight: bold;
             color: #fff;
             box-shadow: inset 4px 0 0 0 #007bff;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Focus effect */
+        .nav-item .nav-link:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Ripple effect */
+        .nav-item .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item .nav-link::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .nav-item .nav-link:active::after {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Gradient background */
+        .bg-gradient-dark {
+            background: linear-gradient(180deg, #343a40 10%, #212529 100%);
+            background-size: cover;
+        }
+
+        /* Text shadow */
+        .sidebar-brand-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .sidebar-divider {
             margin: 1rem 0;
-        }
-
-        /* Hover effect */
-        .nav-item .nav-link:hover {
-            background-color: #4e4e4e;
-            transform: translateX(5px);
-        }
-
-        /* Active link effect */
-        .nav-item.active .nav-link {
-            background-color: #6c757d;
-            font-weight: bold;
-            color: #fff;
-            box-shadow: inset 4px 0 0 0 #007bff;
-            /* Đường viền bên trái */
         }
 
         .sidebar.toggled .nav-item .nav-link span {
@@ -190,6 +223,121 @@
 
         .sidebar.toggled .sidebar-brand-icon {
             font-size: 1.5rem;
+        }
+
+        /* Button customization */
+        .rounded-circle {
+            border-radius: 50% !important;
+        }
+
+        .border-0 {
+            border: 0 !important;
+        }
+
+        /* Loading button */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Pagination animation */
+        .pagination .page-item .page-link {
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .pagination .page-item .page-link:hover {
+            background-color: #007bff;
+            transform: scale(1.1);
+        }
+
+        /* Validation feedback */
+        .is-invalid {
+            border-color: #dc3545;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+        }
+
+        /* Background blur */
+        .bg-blur {
+            backdrop-filter: blur(10px);
+        }
+
+        /* Typing effect */
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 0.15em solid #007bff;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes blink-caret {
+            from,
+            to {
+                border-color: transparent;
+            }
+
+            50% {
+                border-color: #007bff;
+            }
+        }
+
+        /* Text gradient */
+        .text-gradient {
+            background: linear-gradient(45deg, #007bff, #00c6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
@@ -212,14 +360,10 @@
 
             <!-- Grouped Navigation Items -->
             <div class="nav-group">
-                <!-- Nav Item - Phòng ban -->
-                <li class="nav-item {{ request()->is('departments*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('departments') }}">
-                        <i class="fas fa-sitemap {{ request()->is('departments*') ? 'text-primary' : '' }}"></i>
-                        <span>Phòng ban</span>
-                    </a>
-                </li>
 
+
+
+                <!-- Nav Item - Phòng ban -->
                 <!-- Nav Item - Nhân viên -->
                 <li class="nav-item {{ request()->is('users*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('users') }}">
@@ -227,6 +371,15 @@
                         <span>Nhân viên</span>
                     </a>
                 </li>
+
+                <li class="nav-item {{ request()->is('departments*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('departments') }}">
+                        <i class="fas fa-sitemap {{ request()->is('departments*') ? 'text-primary' : '' }}"></i>
+                        <span>Phòng ban</span>
+                    </a>
+                </li>
+
+
 
                 <!-- Nav Item - Quản lý chấm công -->
                 <li class="nav-item {{ request()->is('attendance/department-report*') ? 'active' : '' }}">
@@ -270,20 +423,22 @@
                         <span>Xem bảng lương</span></a>
                 </li>
 
-                <li class="nav-item {{ request()->is('chart*') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route('chart.view') }}">
-                        <i class="fas fa-chart-pie {{ request()->is('chart.view*') ? 'text-primary' : '' }}"></i>
-                        <span>Xem thống kê</span></a>
-                </li>
 
-                <li class="nav-item {{ request()->is('admin_leave_requests*') ? 'active' : '' }}">
+
+                <li class="nav-item {{ request()->is('manage-leave_requests*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('admin_leave_requests.index') }}">
                         <i class="fas fa-chart-pie {{ request()->is('admin_leave_requests.index*') ? 'text-primary' : '' }}"></i>
                         <span>Đơn xin nghỉ phép</span></a>
                 </li>
 
+                <li class="nav-item {{ request()->is('chart*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('chart.view') }}">
+                        <i class="fas fa-chart-pie {{ request()->is('chart.view*') ? 'text-primary' : '' }}"></i>
+                        <span>Thống kê</span></a>
+                </li>
+
             </div>
-            
+
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">

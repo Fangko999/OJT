@@ -27,7 +27,7 @@ class LoginController extends Controller
 
     // Kiểm tra nếu người dùng đã bị vô hiệu hóa (status = 0)
     if ($user->status == 0) {
-        return redirect()->back()->with('error', 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+        return redirect()->back()->with('error', 'Tài khoản của bạn đã bị vô hiệu hóa!');
     }
 
     // Thực hiện đăng nhập nếu thông tin hợp lệ và không bị vô hiệu hóa
@@ -36,7 +36,7 @@ class LoginController extends Controller
 
         // Chuyển hướng dựa trên vai trò của người dùng
         if ($user->role == 1) {
-            return redirect()->route('departments')->with('success', 'Đăng nhập thành công');
+            return redirect()->route('users')->with('success', 'Đăng nhập thành công');
         } elseif ($user->role == 2) {
             return redirect()->route('attendance')->with('success', 'Đăng nhập thành công');
         }

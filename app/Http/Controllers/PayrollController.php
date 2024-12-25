@@ -13,17 +13,32 @@ class PayrollController extends Controller
 {
     public function showPayrollForm()
     {
+        $departments = DB::table('departments')->get();
         $users = User::where('status', 1)
             ->where('role', '!=', '1')
             ->where('salary_level_id', '!=', null)
             ->get();
-        return view('fe_payroll/payroll', compact('users'));
+        return view('fe_payroll/payroll', compact('users', 'departments'));
+    }
+
+    public function getUsersByDepartment(Request $request)
+    {
+        $departmentId = $request->department_id;
+        $users = User::where('status', 1)
+            ->where('role', '!=', '1')
+            ->where('salary_level_id', '!=', null)
+            ->when($departmentId, function ($query, $departmentId) {
+                return $query->where('department_id', $departmentId);
+            })
+            ->get();
+        return response()->json($users);
     }
 
     public function calculatePayroll(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
+            'department_id' => 'nullable|exists:departments,id',
         ]);
 
         $user = User::with('salaryLevel')->findOrFail($request->user_id);
@@ -47,6 +62,7 @@ class PayrollController extends Controller
 
         $salaryCoefficient = $user->salaryLevel->salary_coefficient ?? 0;
         $monthlySalary = $user->salaryLevel->monthly_salary ?? 0;
+        $dailySalary = $user->salaryLevel->daily_salary ?? 0; // Assuming daily_salary is available
         $nameSalary = $user->salaryLevel->level_name ?? 'Chưa có bậc lương';
 
         $attendances = DB::table('user_attendance')
@@ -67,9 +83,17 @@ class PayrollController extends Controller
 
         $invalidDays = $attendances->count() - $validDays;
 
-        $validSalary = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $validDays;
-        $invalidSalaryPenalty = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $invalidDays * 0.5;
-        $salaryReceived = $validSalary + $invalidSalaryPenalty;
+        if ($user->role == 2) {
+            $validSalary = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $validDays;
+            $invalidSalaryPenalty = (($monthlySalary * $salaryCoefficient) / $totalWorkDays) * $invalidDays * 0.5;
+            $salaryReceived = $validSalary + $invalidSalaryPenalty;
+        } elseif ($user->role == 3) {
+            $validSalary = $dailySalary * $validDays;
+            $invalidSalaryPenalty = ($dailySalary * $invalidDays) * 0.5;
+            $salaryReceived = $validSalary + $invalidSalaryPenalty;
+        } else {
+            $salaryReceived = 0; // Default case if role is not 2 or 3
+        }
 
         return [$validDays, $invalidDays, $nameSalary, $salaryReceived, $salaryCoefficient];
     }
@@ -138,18 +162,25 @@ class PayrollController extends Controller
 
     public function showPayrolls(Request $request)
     {
-        // Lấy từ input tìm kiếm
+        // Lấy từ input tìm kiếm và tháng
         $search = $request->input('search');
+        $month = $request->input('month');
 
-        // Lọc payrolls theo tên nhân viên
+        // Lọc payrolls theo tên nhân viên và tháng, sắp xếp theo ngày cập nhật
         $payrolls = Payroll::with('user')
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%'); // Tìm kiếm theo tên nhân viên
                 });
             })
+            ->when($month, function ($query, $month) {
+                $parsedMonth = \Carbon\Carbon::parse($month);
+                return $query->whereMonth('updated_at', $parsedMonth->month)
+                             ->whereYear('updated_at', $parsedMonth->year);
+            })
+            ->orderBy('updated_at', 'desc') // Sắp xếp theo ngày cập nhật
             ->paginate(5);
 
-        return view('fe_payroll/user_payroll', compact('payrolls', 'search'));
+        return view('fe_payroll/user_payroll', compact('payrolls', 'search', 'month'));
     }
 }

@@ -52,6 +52,7 @@
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Tìm kiếm..."
                                 value="{{ $search }}" style="max-width: 250px;">
+                            <input type="month" name="month" class="form-control ml-2" value="{{ $month }}">
                             <button type="submit" class="btn btn-primary ml-2">Tìm kiếm</button>
                         </div>
                     </form>
@@ -77,7 +78,7 @@
                                 <td class="text-center">{{ $payroll->valid_days }}</td>
                                 <td class="text-center">{{ $payroll->invalid_days }}</td>
                                 <td class="text-center">{{ number_format($payroll->salary_received, 0) }} VND</td>
-                                <td class="text-center">{{ $payroll->created_at->format('d/m/Y') }}</td>
+                                <td class="text-center">{{ $payroll->updated_at->format('d/m/Y') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

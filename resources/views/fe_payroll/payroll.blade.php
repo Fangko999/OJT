@@ -118,7 +118,14 @@
                                 <form action="{{ route('payroll.calculate') }}" method="POST">
                                     @csrf
                                     <div class="form-group">
-                                    
+                                        <select name="department_id" id="department_id" class="form-control">
+                                            <option value="">--Chọn phòng ban--</option>
+                                            @foreach ($departments as $department)
+                                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
                                         <select name="user_id" id="user_id" class="form-control">
                                             <option value="">--Chọn nhân viên--</option>
                                             @foreach ($users as $user)
@@ -158,6 +165,37 @@
     <script src="fe-access/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="fe-access/vendor/jquery-easing/jquery.easing.min.js"></script>
     <script src="fe-access/js/sb-admin-2.min.js"></script>
+
+    <script>
+        document.getElementById('department_id').addEventListener('change', function () {
+            var departmentId = this.value;
+            var userSelect = document.getElementById('user_id');
+
+            // Clear existing options
+            userSelect.innerHTML = '<option value="">--Chọn nhân viên--</option>';
+
+            if (departmentId) {
+                fetch(`{{ url('/get-users-by-department') }}?department_id=${departmentId}`)
+                    .then(response => response.json())
+                    .then(users => {
+                        if (users.length > 0) {
+                            users.forEach(user => {
+                                var option = document.createElement('option');
+                                option.value = user.id;
+                                option.textContent = user.name;
+                                userSelect.appendChild(option);
+                            });
+                        } else {
+                            var option = document.createElement('option');
+                            option.value = "";
+                            option.textContent = "Không có nhân viên trong phòng ban này";
+                            option.disabled = true;
+                            userSelect.appendChild(option);
+                        }
+                    });
+            }
+        });
+    </script>
 
 </body>
 

@@ -26,7 +26,7 @@ class User_attendanceController extends Controller
         }
 
         $attendances = $query->orderBy('time', 'desc') // Sắp xếp theo thời gian mới nhất
-            ->paginate(4); // Phân trang, mỗi trang có 7 bản ghi
+            ->paginate(7); // Phân trang, mỗi trang có 7 bản ghi
 
         return view('fe_attendances.users_attendance', compact('attendances'));
     }
@@ -257,7 +257,7 @@ class User_attendanceController extends Controller
                         $checkInTime = $employeeData['attendance'][$date->toDateString()]['checkIn'];
                         if ($checkInTime !== null) {
                             $checkOutTime = $attendance->time;
-                            $hoursWorked = Carbon::parse($checkInTime)->diffInHours(Carbon::parse($checkOutTime));
+                            $hoursWorked = Carbon::parse($checkInTime)->diffInSeconds(Carbon::parse($checkOutTime)) / 3600;
                             $employeeData['attendance'][$date->toDateString()]['checkOut'] = $checkOutTime;
                             $employeeData['attendance'][$date->toDateString()]['hours'] = $hoursWorked;
                         }
@@ -282,73 +282,71 @@ class User_attendanceController extends Controller
             ? Department::whereIn('parent_id', $selectedDepartmentIds)->get()
             : [];
 
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        $startDate = $request->input('start_date', Carbon::now()->subWeek()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
         $singleDate = $request->input('single_date');
 
-        $query = User_attendance::with('user')
-            ->whereHas('user', function ($query) use ($selectedDepartmentIds, $selectedSubDepartment) {
+        $query = User_attendance::with('user');
+
+        if ($selectedDepartmentIds || $selectedSubDepartment) {
+            $query->whereHas('user', function ($query) use ($selectedDepartmentIds, $selectedSubDepartment) {
                 if ($selectedDepartmentIds) {
                     $query->whereIn('department_id', $selectedDepartmentIds);
                 }
                 if ($selectedSubDepartment) {
-                    $query->orWhere('department_id', $selectedSubDepartment);
+                    $query->where('department_id', $selectedSubDepartment);
                 }
             });
+        }
 
         // Áp dụng lọc ngày và phân trang
         $attendanceData = $this->filterByDate($query, $startDate, $endDate, $singleDate)
             ->orderBy('time', 'asc')
-            ->paginate(7); // Chia thành 10 bản ghi mỗi trang
-        // Rest of the monthly report logic
-        $monthlyReport = [];
-        foreach ($attendanceData as $attendance) {
-            $userId = $attendance->user_id;
-            $date = $attendance->time->format('Y-m-d');
-            $type = $attendance->type;
+            ->paginate(7); // Ensure pagination with 7 records per page
 
-            if (!isset($monthlyReport[$userId])) {
-                $monthlyReport[$userId] = [
-                    'name' => $attendance->user->name,
-                    'position' => $attendance->user->position ?? 'N/A',
-                    'dailyHours' => [],
-                    'totalHours' => 0,
-                ];
-            }
+        // Append filter parameters to pagination links
+        $attendanceData->appends($request->all());
 
-            if (!isset($monthlyReport[$userId]['dailyHours'][$date])) {
-                $monthlyReport[$userId]['dailyHours'][$date] = [];
-            }
+        $monthlyReport = $attendanceData->groupBy('user_id')->map(function ($attendances, $userId) {
+            $report = [
+                'name' => $attendances->first()->user->name,
+                'position' => $attendances->first()->user->position ?? 'N/A',
+                'dailyHours' => [],
+                'totalHours' => 0,
+            ];
 
-            if ($type === 'in') {
-                $monthlyReport[$userId]['dailyHours'][$date][] = [
-                    'checkIn' => $attendance->time,
-                    'checkOut' => null,
-                    'hours' => 0,
-                ];
-            } elseif ($type === 'out') {
-                $lastIndex = count($monthlyReport[$userId]['dailyHours'][$date]) - 1;
-                if ($lastIndex >= 0 && !$monthlyReport[$userId]['dailyHours'][$date][$lastIndex]['checkOut']) {
-                    $checkInTime = Carbon::parse($monthlyReport[$userId]['dailyHours'][$date][$lastIndex]['checkIn']);
-                    $checkOutTime = Carbon::parse($attendance->time);
+            foreach ($attendances as $attendance) {
+                $date = $attendance->time->format('Y-m-d');
+                $type = $attendance->type;
 
-                    $hoursWorked = $checkInTime->diffInHours($checkOutTime);
-                    $monthlyReport[$userId]['dailyHours'][$date][$lastIndex]['checkOut'] = $attendance->time;
-                    $monthlyReport[$userId]['dailyHours'][$date][$lastIndex]['hours'] = $hoursWorked;
+                if (!isset($report['dailyHours'][$date])) {
+                    $report['dailyHours'][$date] = [];
+                }
 
-                    $monthlyReport[$userId]['totalHours'] += $hoursWorked;
+                if ($type === 'in') {
+                    $report['dailyHours'][$date][] = [
+                        'checkIn' => $attendance->time,
+                        'checkOut' => null,
+                        'hours' => 0,
+                    ];
+                } elseif ($type === 'out') {
+                    $lastIndex = count($report['dailyHours'][$date]) - 1;
+                    if ($lastIndex >= 0 && !$report['dailyHours'][$date][$lastIndex]['checkOut']) {
+                        $checkInTime = Carbon::parse($report['dailyHours'][$date][$lastIndex]['checkIn']);
+                        $checkOutTime = Carbon::parse($attendance->time);
+
+                        $hoursWorked = $checkInTime->diffInSeconds($checkOutTime) / 3600;
+                        $report['dailyHours'][$date][$lastIndex]['checkOut'] = $attendance->time;
+                        $report['dailyHours'][$date][$lastIndex]['hours'] = $hoursWorked;
+
+                        $report['totalHours'] += $hoursWorked;
+                    }
                 }
             }
-        }
 
-        foreach ($monthlyReport as &$report) {
-            foreach ($report['dailyHours'] as $dateHours) {
-                foreach ($dateHours as $day) {
-                    $report['totalHours'] += $day['hours'];
-                }
-            }
             $report['monthlyTotalHours'] = $report['totalHours'];
-        }
+            return $report;
+        });
 
         return view('fe_attendances.department_report', compact(
             'attendanceData',
@@ -361,6 +359,13 @@ class User_attendanceController extends Controller
             'endDate',
             'singleDate'
         ));
+    }
+
+    public function getSubDepartments(Request $request)
+    {
+        $departmentIds = $request->input('department_ids', []);
+        $subDepartments = Department::whereIn('parent_id', $departmentIds)->pluck('name', 'id');
+        return response()->json($subDepartments);
     }
 
 

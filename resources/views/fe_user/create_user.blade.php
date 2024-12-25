@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Thêm Người Dùng</title>
+    <title>Thêm Nhân Viên</title>
 
     <!-- Font và CSS -->
     <link href="{{asset('fe-access/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
@@ -80,6 +80,24 @@
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </button>
 
+                    @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    @endif
+
+                    @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-4" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    @endif
+
                     <div class="card mt-4">
                         <div class="card-body">
                             <h4 class="card-title mb-4">Thêm Nhân Viên Mới</h4>
@@ -92,7 +110,7 @@
                                         <input type="text" name="name" id="name" class="form-control"
                                             placeholder="Họ và tên nhân viên" value="{{ old('name') }}" required>
                                         @error('name') <small class="text-danger">{{ $message }}</small> @enderror
-                                        <div class="invalid-feedback">Vui lòng nhập tên người dùng.</div>
+                                        <div class="invalid-feedback">Vui lòng nhập tên nhân viên.</div>
                                     </div>
 
                                     <div class="form-group col-md-6">
@@ -364,6 +382,23 @@
                 }
             });
         });
+
+        document.getElementById('role').addEventListener('change', function() {
+            var role = this.value;
+            var departmentField = document.getElementById('department_id');
+            var salaryField = document.getElementById('salary_level_id');
+
+            if (role == 1) { // Admin
+                departmentField.disabled = true;
+                salaryField.disabled = true;
+            } else {
+                departmentField.disabled = false;
+                salaryField.disabled = false;
+            }
+        });
+
+        // Trigger change event on page load to set initial state
+        document.getElementById('role').dispatchEvent(new Event('change'));
     </script>
 </body>
 

@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\DB;
 
 class LeaveRequestController extends Controller
 {
+    public function create()
+    {
+        $user = auth()->user();
+        $leaveBalance = $user->leave_balance;
+        return view('fe_leave.create', compact('leaveBalance'));
+    }
+
     public function store(Request $request)
     {
         $user = auth()->user();
@@ -17,7 +24,7 @@ class LeaveRequestController extends Controller
         $request->validate([
             'leave_type' => 'required|in:full_day,multiple_days',
             'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'end_date' => 'nullable|date|after_or_equal:start_date', // Quy tắc này chỉ áp dụng nếu cần
             'reason' => 'nullable|string|max:255',
         ]);
 
@@ -28,64 +35,21 @@ class LeaveRequestController extends Controller
         if (in_array($request->leave_type, ['full_day']) && $request->end_date) {
             return redirect()->back()->withErrors(['error' => 'Bạn không cần chọn ngày kết thúc cho loại nghỉ này.']);
         }
+
+        // Kiểm tra ngày nghỉ không được đăng ký trước ngày hiện tại (có thể điều chỉnh theo yêu cầu)
+        // Kiểm tra ngày nghỉ không được đăng ký trước ngày hiện tại (trừ trường hợp nghỉ buổi sáng hoặc buổi chiều)
         if (!in_array($request->leave_type, ['full_day']) && strtotime($request->start_date) < strtotime('today')) {
             return redirect()->back()->withErrors(['error' => 'Bạn không thể đăng ký nghỉ cho ngày trước hiện tại.']);
         }
 
-        // Kiểm tra ngày nghỉ đã được nộp đơn chưa
-        $existingLeaves = DB::table('leave_requests')
-            ->where('user_id', $user->id)
-            ->whereIn('status', [0, 1]) // Chỉ kiểm tra các đơn đang chờ phê duyệt hoặc đã được phê duyệt
-            ->where(function ($query) use ($request) {
-                $query->where(function ($subQuery) use ($request) {
-                    $subQuery->where('start_date', '<=', $request->end_date ?? $request->start_date)
-                             ->where('end_date', '>=', $request->start_date);
-                });
-            })
-            ->get();
-
-        if ($existingLeaves->isNotEmpty()) {
-            $overlapMessages = [];
-            foreach ($existingLeaves as $leave) {
-                if ($leave->start_date == $leave->end_date) {
-                    $overlapMessages[] = "Ngày " . date('d-m-Y', strtotime($leave->start_date)) . " đã được nộp đơn xin nghỉ.";
-                } else {
-                    $overlapMessages[] = "Khoảng ngày từ " . date('d-m-Y', strtotime($leave->start_date)) . " đến " . date('d-m-Y', strtotime($leave->end_date)) . " đã được nộp đơn xin nghỉ.";
-                }
-            }
-            return redirect()->back()->withErrors(['error' => implode(' ', $overlapMessages)]);
-        }
+        // Tính toán số ngày nghỉ
+        $duration = $request->leave_type === 'multiple_days'
+            ? (strtotime($request->end_date) - strtotime($request->start_date)) / 86400 + 1
+            : 1;
 
         // Kiểm tra ngày nghỉ có lương hay không
-        $startMonth = date('Y-m', strtotime($request->start_date));
-        $endMonth = date('Y-m', strtotime($request->end_date ?? $request->start_date));
-
-        $currentMonth = $startMonth;
-        $isPaid = true;
-
-        while (strtotime($currentMonth) <= strtotime($endMonth)) {
-            $paidLeaveCount = DB::table('leave_requests')
-                ->where('user_id', $user->id)
-                ->where('is_paid', true)
-                ->where('status', 1) // Chỉ kiểm tra các đơn đã được chấp nhận
-                ->where('start_date', 'like', "$currentMonth%")
-                ->count();
-
-            if ($paidLeaveCount >= 1) {
-                $isPaid = false;
-                break;
-            }
-
-            $currentMonth = date('Y-m', strtotime("+1 month", strtotime($currentMonth)));
-        }
-
-        // Tính tổng số ngày nghỉ
-        $startDate = strtotime($request->start_date);
-        $endDate = strtotime($request->end_date ?? $request->start_date);
-        $totalDays = ($endDate - $startDate) / (60 * 60 * 24) + 1;
-
-        $paidDays = $isPaid ? $totalDays : 0;
-        $unpaidDays = $isPaid ? 0 : $totalDays;
+        $paidDays = min($duration, $user->leave_balance);
+        $unpaidDays = $duration - $paidDays;
 
         // Tạo đơn nghỉ phép
         DB::table('leave_requests')->insert([
@@ -94,45 +58,62 @@ class LeaveRequestController extends Controller
             'end_date' => $request->end_date ?? $request->start_date,
             'leave_type' => $request->leave_type,
             'reason' => $request->reason,
+            'duration' => $duration,
             'status' => 0, // Pending
-            'is_paid' => $isPaid,
+            'is_paid' => $paidDays > 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return redirect()->back()->with('success', "Đơn nghỉ phép đã được gửi thành công! Số ngày nghỉ có lương: $paidDays, số ngày nghỉ không lương: $unpaidDays");
+        // Trừ số ngày nghỉ nếu đơn nghỉ có lương
+        if ($paidDays > 0) {
+            DB::table('users')
+                ->where('id', $user->id)
+                ->decrement('leave_balance', $paidDays);
+        }
+
+        return redirect()->route('leave_requests.index')->with('success', 'Đơn nghỉ phép đã được gửi thành công!');
     }
 
     public function index()
     {
-        $user = auth()->user();
-        $userId = auth()->id();
-        $leaveRequests = DB::table('leave_requests')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
+        $leaveRequests = LeaveRequest::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc') // Add this line to sort by creation date
             ->paginate(5);
+        $remainingPaidLeaveDays = auth()->user()->remaining_paid_leave_days; // Assuming this attribute exists on the User model
 
-        // dd($leaveRequests); // Kiểm tra cấu trúc dữ liệu
-        return view('fe_leave/leave_request', compact('leaveRequests'));
+        return view('fe_leave.leave_request', compact('leaveRequests', 'remainingPaidLeaveDays'));
     }
-
 
     public function destroy($id)
     {
         $leaveRequest = DB::table('leave_requests')->find($id);
 
         if (!$leaveRequest || $leaveRequest->user_id !== auth()->id()) {
-            return redirect()->route('fe_leave/leave_request')->withErrors('Không tìm thấy đơn nghỉ phép!');
+            return redirect()->route('leave_requests.index')->withErrors('Không tìm thấy đơn nghỉ phép!');
+        }
+
+        // Chỉ cho phép xóa đơn nghỉ phép đang chờ duyệt
+        if ($leaveRequest->status != 0) {
+            return redirect()->route('leave_requests.index')->withErrors('Chỉ có thể xóa đơn nghỉ phép đang chờ duyệt!');
+        }
+
+        // Hoàn lại số ngày nghỉ có lương nếu đơn bị từ chối
+        if ($leaveRequest->status == 2 && $leaveRequest->is_paid) {
+            DB::table('users')
+                ->where('id', $leaveRequest->user_id)
+                ->increment('leave_balance', $leaveRequest->duration);
         }
 
         DB::table('leave_requests')->delete($id);
 
-        return redirect()->route('fe_leave/leave_request')->with('success', 'Đơn nghỉ phép đã được xóa!');
+        return redirect()->route('leave_requests.index')->with('success', 'Đơn nghỉ phép đã được xóa!');
     }
 
     public function edit($id)
     {
         $user = auth()->user();
+        $leaveBalance = $user->leave_balance;
 
         // Lấy thông tin đơn nghỉ phép
         $leaveRequest = DB::table('leave_requests')
@@ -141,10 +122,15 @@ class LeaveRequestController extends Controller
             ->first();
 
         if (!$leaveRequest) {
-            return redirect()->route('fe_leave/leave_request')->withErrors(['error' => 'Không tìm thấy đơn nghỉ phép.']);
+            return redirect()->route('leave_requests.index')->withErrors(['error' => 'Không tìm thấy đơn nghỉ phép.']);
         }
 
-        return view('fe_leave/edit', compact('leaveRequest'));
+        // Chỉ cho phép chỉnh sửa đơn nghỉ phép đang chờ duyệt
+        if ($leaveRequest->status != 0) {
+            return redirect()->route('leave_requests.index')->withErrors(['error' => 'Chỉ có thể chỉnh sửa đơn nghỉ phép đang chờ duyệt!']);
+        }
+
+        return view('fe_leave.edit', compact('leaveRequest', 'leaveBalance'));
     }
 
     // Cập nhật đơn nghỉ phép
@@ -167,7 +153,7 @@ class LeaveRequestController extends Controller
             ->first();
 
         if (!$leaveRequest) {
-            return redirect()->route('fe_leave/leave_request')->withErrors(['error' => 'Không tìm thấy đơn nghỉ phép.']);
+            return redirect()->route('leave_requests.index')->withErrors(['error' => 'Không tìm thấy đơn nghỉ phép.']);
         }
 
         // Kiểm tra điều kiện logic
@@ -179,6 +165,15 @@ class LeaveRequestController extends Controller
             return redirect()->back()->withErrors(['error' => 'Bạn không cần chọn ngày kết thúc cho loại nghỉ này.']);
         }
 
+        // Tính toán số ngày nghỉ
+        $duration = $request->leave_type === 'multiple_days'
+            ? (strtotime($request->end_date) - strtotime($request->start_date)) / 86400 + 1
+            : 1;
+
+        // Kiểm tra ngày nghỉ có lương hay không
+        $paidDays = min($duration, $user->leave_balance);
+        $unpaidDays = $duration - $paidDays;
+
         // Cập nhật dữ liệu vào database
         DB::table('leave_requests')
             ->where('id', $id)
@@ -187,9 +182,11 @@ class LeaveRequestController extends Controller
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date ?? $request->start_date,
                 'reason' => $request->reason,
+                'duration' => $duration,
+                'is_paid' => $paidDays > 0,
                 'updated_at' => now(),
             ]);
 
-        return redirect()->route('fe_leave/leave_request')->with('success', 'Đơn nghỉ phép đã được cập nhật thành công!');
+        return redirect()->route('leave_requests.index')->with('success', 'Đơn nghỉ phép đã được cập nhật thành công!');
     }
 }

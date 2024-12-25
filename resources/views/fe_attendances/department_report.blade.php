@@ -102,6 +102,11 @@
                         </div>
                     @endif
 
+                    @php
+                        $defaultStartDate = \Carbon\Carbon::now()->subWeek()->format('Y-m-d');
+                        $defaultEndDate = \Carbon\Carbon::now()->format('Y-m-d');
+                    @endphp
+
                     <form method="GET" action="{{ route('department.report') }}" class="mb-4 filter-form">
                         <div class="row">
                             <div class="col-md-6">
@@ -131,10 +136,10 @@
 
                         <div class="form-group mt-3">
                             <label for="start_date">Từ ngày:</label>
-                            <input type="date" name="start_date" value="{{ $startDate }}" class="form-control" style="display: inline-block; width: auto;">
+                            <input type="date" name="start_date" value="{{ $startDate ?? $defaultStartDate }}" class="form-control" style="display: inline-block; width: auto;">
 
                             <label for="end_date">Đến ngày:</label>
-                            <input type="date" name="end_date" value="{{ $endDate }}" class="form-control" style="display: inline-block; width: auto;">
+                            <input type="date" name="end_date" value="{{ $endDate ?? $defaultEndDate }}" class="form-control" style="display: inline-block; width: auto;">
                         </div>
 
                         <button type="submit" class="btn btn-primary mt-3">Lọc</button>
@@ -154,41 +159,21 @@
                                 <tbody>
                                     @foreach ($monthlyReport as $userId => $report)
                                         @foreach ($report['dailyHours'] as $date => $records)
-                                            @if (empty($singleDate) || $date == $singleDate) <!-- Lọc theo ngày đơn lẻ -->
-                                                @foreach ($records as $record)
-                                                    <tr>
-                                                        <td>{{ $report['name'] }}</td>
-                                                        <td>{{ $record['checkIn'] }}</td>
-                                                        <td>{{ $record['checkOut'] ?? 'N/A' }}</td>
-                                                        <td>{{ gmdate('H:i:s', $record['hours'] * 3600) }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            @endif
+                                            @foreach ($records as $record)
+                                                <tr>
+                                                    <td>{{ $report['name'] }}</td>
+                                                    <td>{{ $record['checkIn'] }}</td>
+                                                    <td>{{ $record['checkOut'] ?? 'N/A' }}</td>
+                                                    <td>{{ gmdate('H:i:s', $record['hours'] * 3600) }}</td>
+                                                </tr>
+                                            @endforeach
                                         @endforeach
                                     @endforeach
                                 </tbody>
                             </table>
                             <div class="d-flex justify-content-center mt-3">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination">
-                                @if ($attendanceData->currentPage() > 1)
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $attendanceData->url(1) }}" aria-label="First">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                @endif
-                                {{ $attendanceData->links() }}
-                                @if ($attendanceData->currentPage() < $attendanceData->lastPage())
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $attendanceData->url($attendanceData->lastPage()) }}" aria-label="Last">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                                @endif
-                            </ul>
-                        </nav>
-                    </div>
+                                {{ $attendanceData->appends(request()->input())->links() }} <!-- Ensure pagination links retain filter parameters -->
+                            </div>
                         </div>
                     @else
                         <div class="text-center mt-3">
@@ -226,6 +211,22 @@
                 $('#sub_department_id').select2({
                     placeholder: "Chọn phòng ban con",
                     allowClear: true
+                });
+
+                // Load sub-departments based on selected parent departments
+                $('#department_ids').on('change', function() {
+                    var departmentIds = $(this).val();
+                    $.ajax({
+                        url: '{{ route("getSubDepartments") }}',
+                        method: 'GET',
+                        data: { department_ids: departmentIds },
+                        success: function(data) {
+                            $('#sub_department_id').empty().append('<option value="">Chọn phòng ban con</option>');
+                            $.each(data, function(key, value) {
+                                $('#sub_department_id').append('<option value="' + key + '">' + value + '</option>');
+                            });
+                        }
+                    });
                 });
             });
         </script>

@@ -25,46 +25,57 @@
                 @include('fe_admin.topbar')
 
                 <div class="container pt-5 mb-5">
-                    <h2 style="font-weight: bold"><i class="bi bi-house"></i> Chi tiết</h2>
+                    <h2 style="font-weight: bold"><i class="bi bi-house"></i> Đơn nghỉ phép</h2>
+                    <a href="{{ route('leave_requests.create') }}" class="btn btn-primary mb-3">Tạo đơn xin nghỉ phép</a>
                     <div class="row">
-                        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#leaveRequestModal">
-                            Tạo đơn xin nghỉ
-                        </button>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Loại nghỉ</th>
-                                    <th>Ngày bắt đầu</th>
-                                    <th>Ngày kết thúc</th>
-                                    <th>Lý do</th>
-                                    <th>Trạng thái</th>
-                                    <th>Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($leaveRequests as $leave)
-                                <tr>
-                                    <td>{{ $leave->leave_type }}</td>
-                                    <td>{{ $leave->start_date }}</td>
-                                    <td>{{ $leave->end_date }}</td>
-                                    <td>{{ $leave->reason }}</td>
-                                    <td>{{ $leave->status == 0 ? 'Đang chờ duyệt' : 'Đã duyệt' }}</td>
-                                    <td>
-                                        <a href="{{ route('leave_requests.edit', $leave->id) }}" class="btn btn-warning">Sửa</a>
-                                        <form action="{{ route('leave_requests.destroy', $leave->id) }}" method="POST"
-                                            class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger"
-                                                onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <div class="d-flex justify-content-center">
-                            {{ $leaveRequests->onEachSide(2)->appends(request()->input())->links() }}
+                        <div class="col-md-9">
+                            <div class="alert alert-info">
+                                Số ngày nghỉ phép có lương còn lại: <span class="font-weight-bold">{{ $remainingPaidLeaveDays }}</span>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Loại nghỉ</th>
+                                        <th>Ngày bắt đầu</th>
+                                        <th>Ngày kết thúc</th>
+                                        <th>Lý do</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($leaveRequests as $leave)
+                                    <tr>
+                                        <td>{{ $leave->leave_type }}</td>
+                                        <td>{{ $leave->start_date }}</td>
+                                        <td>{{ $leave->end_date }}</td>
+                                        <td>{{ $leave->reason }}</td>
+                                        <td>
+                                            @if ($leave->status == 0)
+                                                <span class="badge bg-warning text-dark">Đang chờ duyệt</span>
+                                            @elseif ($leave->status == 1)
+                                                <span class="badge bg-success">Đã chấp nhận</span>
+                                            @else
+                                                <span class="badge bg-danger">Đã từ chối</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($leave->status == 0)
+                                                <a href="{{ route('leave_requests.edit', $leave->id) }}" class="btn btn-warning">Sửa</a>
+                                                <form action="{{ route('leave_requests.destroy', $leave->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-center">
+                                {{ $leaveRequests->onEachSide(2)->appends(request()->input())->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -108,6 +119,11 @@
                             <label for="reason" class="form-label">Lý do nghỉ</label>
                             <textarea class="form-control" id="reason" name="reason" rows="3" maxlength="255"></textarea>
                         </div>
+
+                        <div class="mb-3">
+                            <p>Số ngày nghỉ có lương: <span id="paid_days" class="font-weight-bold text-success">0</span></p>
+                            <p>Số ngày nghỉ không lương: <span id="unpaid_days" class="font-weight-bold text-danger">0</span></p>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -128,22 +144,6 @@
     <script src="fe-access/vendor/jquery-easing/jquery.easing.min.js"></script>
     <script src="fe-access/js/sb-admin-2.min.js"></script>
 
-    <script>
-        document.getElementById('leave_type').addEventListener('change', function() {
-            const leaveType = this.value;
-            const endDateLabel = document.getElementById('end_date_label');
-            const endDateInput = document.getElementById('end_date');
-
-            if (leaveType === 'multiple_days') {
-                endDateLabel.style.display = 'block';
-                endDateInput.style.display = 'block';
-                endDateInput.required = true;
-            } else {
-                endDateLabel.style.display = 'none';
-                endDateInput.style.display = 'none';
-                endDateInput.required = false;
-            }
-        });
-    </script>
 </body>
+
 </html>

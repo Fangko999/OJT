@@ -281,17 +281,17 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Nút Xóa Người Dùng Đã Chọn -->
+                                <!-- Nút Xóa nhân viên Đã Chọn -->
                                 <div class="col-md-3 text-center">
                                     <button type="button" class="btn btn-danger w-100" onclick="confirmBulkDelete()">
-                                        <i class="fas fa-trash"></i> Xóa Người Dùng Đã Chọn
+                                        <i class="fas fa-trash"></i> Xóa Nhân Viên Đã Chọn
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Danh sách người dùng -->
+                    <!-- Danh sách nhân viên -->
                     <div class="table-responsive">
                         <form id="deleteUsersForm" method="POST" action="{{ route('users.destroy') }}">
                             @csrf
@@ -327,7 +327,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($users as $user)
+                                    @forelse ($users->where('status', 1) as $user)
                                     <tr>
                                         <td><input type="checkbox" name="user_ids[]" value="{{ $user->id }}"></td>
                                         <td>{{ $loop->iteration }}</td>
@@ -427,7 +427,7 @@
             document.getElementById('importFile').click();
         });
 
-        document.getElementById('importFile').addEventListener('change', function() {
+        document.getElementId('importFile').addEventListener('change', function() {
             document.getElementById('importForm').submit();
         });
 
@@ -443,14 +443,42 @@
             const selectedCheckboxes = form.querySelectorAll('input[name="user_ids[]"]:checked');
 
             if (selectedCheckboxes.length === 0) {
-                alert('Vui lòng chọn ít nhất một người dùng để xóa.');
+                alert('Vui lòng chọn ít nhất một nhân viên để xóa.');
                 return;
             }
 
-            if (confirm('Bạn có chắc chắn muốn xóa những người dùng đã chọn?')) {
+            if (confirm('Bạn có chắc chắn muốn xóa những nhân viên đã chọn?')) {
                 form.submit();
             }
         }
+
+        document.getElementById('deleteUsersForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Xóa nhân viên thành công!');
+                    // Reload the current page without changing the page number
+                    window.location.reload();
+                } else {
+                    alert('Đã xảy ra lỗi khi xóa nhân viên.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Đã xảy ra lỗi khi xóa nhân viên.');
+            });
+        });
 
         // Smooth scroll to top
         document.querySelector('.scroll-to-top').addEventListener('click', function(e) {

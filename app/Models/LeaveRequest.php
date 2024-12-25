@@ -19,7 +19,7 @@ class LeaveRequest extends Model
         'is_paid',
         'reason',
         'status',
-        
+        'duration',
     ];
     protected $casts = [
         'created_at' => 'datetime',

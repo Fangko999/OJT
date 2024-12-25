@@ -21,6 +21,7 @@ class UsersExport implements WithMultipleSheets
         } catch (Exception $e) {
             // Nếu có lỗi trong việc truy vấn dữ liệu
             // Lỗi có thể là kết nối database hoặc cấu hình sai
+            \Log::error("Lỗi khi truy vấn dữ liệu người dùng: " . $e->getMessage());
             throw new Exception("Lỗi khi truy vấn dữ liệu người dùng: " . $e->getMessage());
         }
 
@@ -61,7 +62,7 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
     public function collection()
     {
         try {
-            return User::with('department')
+            return User::with(['department', 'salaryLevel']) // Ensure relationships are loaded
                 ->offset($this->offset)
                 ->limit($this->limit)
                 ->get()
@@ -71,6 +72,9 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
                         'Email' => $user->email,
                         'Số điện thoại' => $user->phone_number,
                         'Phòng ban' => $user->department ? $user->department->name : 'N/A',
+                        'Giới tính' => $user->gender == 1 ? 'Nam' : 'Nữ',
+                        'Ngày sinh' => $user->date_of_birth,
+                        'Bậc lương' => $user->salaryLevel ? $user->salaryLevel->level_name : 'N/A', // Access salaryLevel correctly
                     ];
                 });
         } catch (Exception $e) {
@@ -87,6 +91,9 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
             'Email',
             'Số điện thoại',
             'Phòng ban',
+            'Giới tính',
+            'Ngày sinh',
+            'Bậc lương',
         ];
     }
 
@@ -96,7 +103,7 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Lặp qua các cột để set autosize
-                foreach (range('A', 'D') as $columnID) {
+                foreach (range('A', 'G') as $columnID) {
                     $event->sheet->getDelegate()->getColumnDimension($columnID)->setAutoSize(true);
                 }
             },

@@ -37,6 +37,7 @@ class User extends Authenticatable
         'updated_by',
         'gender',
         'date_of_birth',
+        'leave_balance',
     ];
 
     /**
@@ -78,12 +79,32 @@ public function updater()
 }
 public function salaryLevel()
     {
-        return $this->belongsTo(SalaryLevel::class, 'salary_level_id');
+        return $this->belongsTo(SalaryLevel::class);
     }
 
 protected $attributes = [
         'remind_checkin' => '08:00:00',
         'remind_checkout' => '17:00:00',
 ];
+
+public function getRoleNameAttribute()
+    {
+        switch ($this->role) {
+            case 1:
+                return 'Admin';
+            case 2:
+                return 'Nhân viên chính thức';
+            case 3:
+                return 'Nhân viên tạm thời';
+            default:
+                return 'Không xác định';
+        }
+    }
+
+    public function getRemainingPaidLeaveDaysAttribute()
+    {
+        // Assuming you have a leave_balance column in your users table
+        return $this->leave_balance;
+    }
 
 }

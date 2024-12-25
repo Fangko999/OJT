@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Department;
 use App\Models\User;
+use App\Models\SalaryLevel;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
@@ -16,57 +17,100 @@ class UsersImport implements ToCollection
      */
     public function collection(Collection $rows)
     {
+        if ($rows->count() <= 1) {
+            throw new \Exception("No data rows found in the file.");
+        }
+
         $dataRows = $rows->skip(1);
+        $updatedById = auth()->id();
+
+        if (!$updatedById) {
+            throw new \Exception("No authenticated user found for updating/creating records.");
+        }
 
         foreach ($dataRows as $row) {
             try {
-                // Tìm department_id dựa vào tên phòng ban
                 $department = Department::where('name', $row[4])->first();
-
                 if (!$department) {
                     throw new \Exception("Department not found: " . $row[4]);
                 }
 
-                // Tìm người dùng dựa trên email
+                if (!filter_var($row[1], FILTER_VALIDATE_EMAIL)) {
+                    throw new \Exception("Invalid email format: " . $row[1]);
+                }
+
+                $dateOfBirth = \Carbon\Carbon::createFromFormat('Y-m-d', $row[7])->format('Y-m-d');
+                $role = $this->getRole($row[5]);
+                $gender = $this->getGender($row[6]);
+
+                $salaryLevel = SalaryLevel::where('level_name', $row[8])->first();
+                if (!$salaryLevel) {
+                    throw new \Exception("Salary level not found: " . $row[8]);
+                }
+
                 $user = User::where('email', $row[1])->first();
-
-                // Lấy ID của người cập nhật (giả sử từ session)
-                $updatedById = auth()->id();
-
                 if ($user) {
-                    // Cập nhật thông tin người dùng nếu đã tồn tại
                     $user->update([
-                        'name' => $row[0],  // Tên
-                        'email' => $row[1],  // Email
-                        'password' => bcrypt($row[2]),  // Mật khẩu
-                        'phone_number' => $row[3],  // Số điện thoại
-                        'position' => $row[5],  // Vị trí
-                        'department_id' => $department->id,  // ID phòng ban
-                        'status' => 1,  // Trạng thái mặc định là 1
-                        'role' => 2,  // Role mặc định là 2
-                        'updated_at' => now(),  // Thời gian cập nhật
-                        'updated_by' => $updatedById,  // ID người cập nhật
+                        'name' => $row[0],
+                        'email' => $row[1],
+                        'password' => bcrypt($row[2]),
+                        'phone_number' => $row[3],
+                        'department_id' => $department->id,
+                        'status' => 1,
+                        'role' => $role,
+                        'gender' => $gender,
+                        'date_of_birth' => $dateOfBirth,
+                        'salary_grade' => $row[8],
+                        'salary_level_id' => $salaryLevel->id,
+                        'updated_at' => now(),
+                        'updated_by' => $updatedById,
                     ]);
                 } else {
-                    // Tạo người dùng mới
                     User::create([
                         'name' => $row[0],
                         'email' => $row[1],
                         'password' => bcrypt($row[2]),
                         'phone_number' => $row[3],
                         'department_id' => $department->id,
-                        'position' => $row[5],
                         'status' => 1,
-                        'role' => 2,
+                        'role' => $role,
+                        'gender' => $gender,
+                        'date_of_birth' => $dateOfBirth,
+                        'salary_level_id' => $salaryLevel->id,
                         'created_at' => now(),
                         'created_by' => $updatedById,
                     ]);
                 }
             } catch (\Exception $e) {
-                // Ghi log lỗi hoặc xử lý tiếp
-                // \Log::error("Lỗi khi import dòng: " . json_encode($row) . " - " . $e->getMessage());
+                \Log::error("Import error at row: " . json_encode($row) . " - " . $e->getMessage());
                 continue;
             }
+        }
+    }
+
+    private function getRole($role)
+    {
+        switch (strtolower($role)) {
+            case 'admin':
+                return 1;
+            case 'nhân viên chính thức':
+                return 2;
+            case 'nhân viên tạm thời':
+                return 3;
+            default:
+                throw new \Exception("Invalid role: " . $role);
+        }
+    }
+
+    private function getGender($gender)
+    {
+        switch (strtolower($gender)) {
+            case 'nam':
+                return 1;
+            case 'nữ':
+                return 0;
+            default:
+                throw new \Exception("Invalid gender: " . $gender);
         }
     }
 }

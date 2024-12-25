@@ -427,7 +427,7 @@
             document.getElementById('importFile').click();
         });
 
-        document.getElementId('importFile').addEventListener('change', function() {
+        document.getElementById('importFile').addEventListener('change', function() {
             document.getElementById('importForm').submit();
         });
 

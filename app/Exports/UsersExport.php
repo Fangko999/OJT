@@ -75,6 +75,7 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
                         'Giới tính' => $user->gender == 1 ? 'Nam' : 'Nữ',
                         'Ngày sinh' => $user->date_of_birth,
                         'Bậc lương' => $user->salaryLevel ? $user->salaryLevel->level_name : 'N/A', // Access salaryLevel correctly
+                        'Chức vụ' => $this->getRoleName($user->role), // Add role column
                     ];
                 });
         } catch (Exception $e) {
@@ -94,7 +95,22 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
             'Giới tính',
             'Ngày sinh',
             'Bậc lương',
+            'Chức vụ', // Add role heading
         ];
+    }
+
+    private function getRoleName($role)
+    {
+        switch ($role) {
+            case 1:
+                return 'Admin';
+            case 2:
+                return 'Nhân viên chính thức';
+            case 3:
+                return 'Nhân viên tạm thời';
+            default:
+                return 'N/A';
+        }
     }
 
     // Đăng ký sự kiện để tự động điều chỉnh kích thước cột
@@ -103,7 +119,7 @@ class UserSheet implements FromCollection, WithHeadings, WithEvents
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Lặp qua các cột để set autosize
-                foreach (range('A', 'G') as $columnID) {
+                foreach (range('A', 'H') as $columnID) { // Adjust range to include new column
                     $event->sheet->getDelegate()->getColumnDimension($columnID)->setAutoSize(true);
                 }
             },

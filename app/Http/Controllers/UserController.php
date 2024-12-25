@@ -278,7 +278,11 @@ class UserController extends Controller
         ]);
         try {
             Excel::import(new UsersImport, $request->file('import_file'));
-            return redirect()->route('users')->with('success', 'Import nhân viên thành công.');
+            // Check if any users were imported
+            if (User::count() == 0) {
+                return redirect()->route('users')->with('error', 'Import thất bại, không có dữ liệu được nhập.');
+            }
+            return redirect()->route('users')->with('success', 'Import thành công.');
         } catch (\Exception $e) {
             return redirect()->route('users')->with('error', 'Import thất bại, vui lòng kiểm tra lại file.');
         }

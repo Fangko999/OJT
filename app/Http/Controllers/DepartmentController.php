@@ -33,7 +33,7 @@ class DepartmentController extends Controller
     
         // Lấy tất cả người dùng có trạng thái hoạt động (status = 1) thuộc các phòng ban đó
         $users = User::whereIn('department_id', $departmentIds)
-                     ->where('status', 1) // Chỉ lấy người dùng có trạng thái hoạt động
+                    //  ->where('status', 1) // Chỉ lấy người dùng có trạng thái hoạt động
                      ->paginate(4); // Paginate users
     
         // Trả về view với dữ liệu phòng ban và danh sách người dùng
@@ -181,11 +181,14 @@ class DepartmentController extends Controller
     }
 
     public function edit($id)
-    {
-        $department = Department::findOrFail($id);
-        $departments = Department::where('status', 1)->get();
-        return view('fe_department/edit_department', compact('department', 'departments'));
-    }
+{
+    $department = Department::findOrFail($id);
+    $departments = Department::where('status', 1)
+                              ->where('id', '!=', $department->id)
+                              ->get();
+    return view('fe_department/edit_department', compact('department', 'departments'));
+}
+
 
     public function update(Request $request, $id)
     {
